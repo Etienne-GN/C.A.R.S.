@@ -1,63 +1,73 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Car, CarCreate, testExport } from '../types/car';
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
+import type { Car, CarCreate } from '../types/car';
+import { getCars, createCar } from '../api/cars';
+
+const EMPTY_FORM: CarCreate = {
+  make: '',
+  model: '',
+  year: new Date().getFullYear(),
+  vin: '',
+  license_plate: '',
+  color: '',
+  owner: '',
+};
 
 const CarListPage = () => {
   const [cars, setCars] = useState<Car[]>([]);
-  const [newCar, setNewCar] = useState<CarCreate>({
-    make: '',
-    model: '',
-    year: 2023,
-    vin: '',
-    license_plate: '',
-    color: '',
-    owner: '',
-  });
+  const [newCar, setNewCar] = useState<CarCreate>(EMPTY_FORM);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchCars();
+    let cancelled = false;
+    getCars()
+      .then((data) => {
+        if (!cancelled) setCars(data);
+      })
+      .catch(() => {
+        if (!cancelled) setError('Failed to load cars.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const fetchCars = async () => {
-    try {
-      const response = await axios.get<Car[]>('http://localhost:8000/cars/');
-      setCars(response.data);
-    } catch (error) {
-      console.error('Error fetching cars:', error);
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setNewCar((prevCar) => ({
-      ...prevCar,
-      [name]: name === 'year' ? parseInt(value) : value,
-    }));
+    setNewCar((prev) => {
+      if (name === 'year') {
+        const parsed = parseInt(value, 10);
+        return { ...prev, year: Number.isNaN(parsed) ? prev.year : parsed };
+      }
+      return { ...prev, [name]: value };
+    });
   };
 
-  const handleCreateCar = async (e: React.FormEvent) => {
+  const handleCreateCar = async (e: FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
+    setError(null);
     try {
-      await axios.post<Car>('http://localhost:8000/cars/', newCar);
-      setNewCar({
-        make: '',
-        model: '',
-        year: 2023,
-        vin: '',
-        license_plate: '',
-        color: '',
-        owner: '',
-      });
-      fetchCars(); // Refresh the list
-    } catch (error) {
-      console.error('Error creating car:', error);
+      const created = await createCar(newCar);
+      setCars((prev) => [...prev, created]);
+      setNewCar(EMPTY_FORM);
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      setError(status === 409 ? 'A car with this VIN or license plate already exists.' : 'Failed to create car.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
     <div>
       <h2>My Garage</h2>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
 
       <h3>Add New Car</h3>
       <form onSubmit={handleCreateCar}>
@@ -68,11 +78,15 @@ const CarListPage = () => {
         <input type="text" name="license_plate" placeholder="License Plate" value={newCar.license_plate} onChange={handleInputChange} required />
         <input type="text" name="color" placeholder="Color" value={newCar.color} onChange={handleInputChange} required />
         <input type="text" name="owner" placeholder="Owner" value={newCar.owner} onChange={handleInputChange} required />
-        <button type="submit">Add Car</button>
+        <button type="submit" disabled={submitting}>
+          {submitting ? 'Adding…' : 'Add Car'}
+        </button>
       </form>
 
       <h3>Your Cars</h3>
-      {cars.length === 0 ? (
+      {loading ? (
+        <p>Loading…</p>
+      ) : cars.length === 0 ? (
         <p>No cars added yet. Add one above!</p>
       ) : (
         <ul>

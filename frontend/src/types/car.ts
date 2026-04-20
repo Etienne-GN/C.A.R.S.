@@ -19,4 +19,12 @@ export interface CarCreate {
   owner: string;
 }
 
-export const testExport = "Hello from car.ts";
+export interface CarUpdate {
+  make?: string;
+  model?: string;
+  year?: number;
+  vin?: string;
+  license_plate?: string;
+  color?: string;
+  owner?: string;
+}
