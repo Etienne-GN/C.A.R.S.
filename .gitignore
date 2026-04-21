@@ -29,3 +29,6 @@ env/
 
 # Local run state (start.sh / stop.sh)
 .run/
+
+# Uploads (user files, live on server)
+backend/uploads/
