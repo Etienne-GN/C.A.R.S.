@@ -2,7 +2,7 @@ export interface Car {
   id: number;
   make: string;
   model: string;
-  year: number;
+  year?: number;
   vin: string;
   license_plate: string;
   color?: string;
@@ -25,7 +25,7 @@ export interface CarSummary {
   id: number;
   make: string;
   model: string;
-  year: number;
+  year?: number;
   vin: string;
   license_plate: string;
   color?: string;
@@ -41,7 +41,7 @@ export interface CarSummary {
 export interface CarCreate {
   make: string;
   model: string;
-  year: number;
+  year?: number;
   vin: string;
   license_plate: string;
   color?: string;

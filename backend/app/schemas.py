@@ -134,7 +134,7 @@ class ScheduledMaintenance(ScheduledMaintenanceBase):
 class CarBase(BaseModel):
     make: str = Field(min_length=1, max_length=50)
     model: str = Field(min_length=1, max_length=50)
-    year: int = Field(ge=1886, le=2100)
+    year: Optional[int] = Field(default=None, ge=1886, le=2100)
     vin: str = Field(min_length=1, max_length=17)
     license_plate: str = Field(min_length=1, max_length=20)
     color: Optional[str] = Field(default=None, max_length=30)
