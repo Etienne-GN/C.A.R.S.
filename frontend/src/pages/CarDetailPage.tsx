@@ -1,124 +1,382 @@
-import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import type { Car, CarUpdate } from '../types/car';
-import { getCar, updateCar, deleteCar } from '../api/cars';
+import { deleteCar, getCar } from '../api/cars';
+import { createMaintenance, deleteMaintenance, updateMaintenance } from '../api/maintenance';
+import ConfirmDialog from '../components/ConfirmDialog';
+import type { Car } from '../types/car';
+import type { ScheduledMaintenance, ScheduledMaintenanceCreate } from '../types/maintenance';
+import type { ServiceRecord } from '../types/service';
 
-const CarDetailPage = () => {
-  const { carId } = useParams<{ carId: string }>();
-  const navigate = useNavigate();
-  const [car, setCar] = useState<Car | null>(null);
-  const [form, setForm] = useState<CarUpdate>({});
-  const [editing, setEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+type Tab = 'overview' | 'history' | 'schedule';
 
-  useEffect(() => {
-    if (!carId) return;
-    let cancelled = false;
-    getCar(Number(carId))
-      .then((data) => {
-        if (cancelled) return;
-        setCar(data);
-        setForm(data);
-      })
-      .catch(() => {
-        if (!cancelled) setError('Car not found.');
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [carId]);
+function fmtDate(d?: string) {
+  if (!d) return '—';
+  return new Date(d + 'T00:00:00').toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' });
+}
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setForm((prev) => {
-      if (name === 'year') {
-        const parsed = parseInt(value, 10);
-        return { ...prev, year: Number.isNaN(parsed) ? undefined : parsed };
-      }
-      return { ...prev, [name]: value };
-    });
-  };
+function fmtCurrency(n?: number) {
+  if (n == null) return '—';
+  return n.toLocaleString('en-CA', { style: 'currency', currency: 'CAD' });
+}
 
-  const handleSave = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!carId) return;
-    setError(null);
-    try {
-      const updated = await updateCar(Number(carId), form);
-      setCar(updated);
-      setForm(updated);
-      setEditing(false);
-    } catch (err: unknown) {
-      const status = (err as { response?: { status?: number } })?.response?.status;
-      setError(status === 409 ? 'Another car already has this VIN or license plate.' : 'Failed to update car.');
-    }
-  };
+function fmtMileage(n?: number) {
+  if (n == null) return '—';
+  return n.toLocaleString() + ' km';
+}
 
-  const handleCancel = () => {
-    setForm(car ?? {});
-    setEditing(false);
-    setError(null);
-  };
-
-  const handleDelete = async () => {
-    if (!carId || !car) return;
-    if (!window.confirm(`Delete ${car.year} ${car.make} ${car.model}?`)) return;
-    setError(null);
-    try {
-      await deleteCar(Number(carId));
-      navigate('/cars');
-    } catch {
-      setError('Failed to delete car.');
-    }
-  };
-
-  if (loading) return <p>Loading…</p>;
-  if (error && !car) return (
-    <div>
-      <p style={{ color: 'red' }}>{error}</p>
-      <Link to="/cars">← Back to Garage</Link>
+function DetailField({ label, value }: { label: string; value?: string | number | null }) {
+  return (
+    <div className="detail-field">
+      <div className="detail-label">{label}</div>
+      <div className={`detail-value ${!value ? 'empty' : ''}`}>{value ?? 'Not set'}</div>
     </div>
   );
-  if (!car) return null;
+}
 
-  const currentYear = new Date().getFullYear();
+// ── Overview Tab ──────────────────────────────────────────────────────────────
+
+function OverviewTab({ car }: { car: Car }) {
+  const totalSpent = car.service_records.reduce((s, r) => s + r.total_cost, 0);
 
   return (
-    <div>
-      <Link to="/cars">← Back to Garage</Link>
-      <h2>{car.year} {car.make} {car.model}</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {totalSpent > 0 && (
+        <div className="cost-row">
+          <div className="cost-row-item">
+            <span className="cost-row-label">Total Maintenance Spent</span>
+            <span className="cost-row-value">{fmtCurrency(totalSpent)}</span>
+          </div>
+          <div className="cost-row-item">
+            <span className="cost-row-label">Services Logged</span>
+            <span className="cost-row-value">{car.service_records.length}</span>
+          </div>
+        </div>
+      )}
 
-      {editing ? (
-        <form onSubmit={handleSave}>
-          <input type="text" name="make" placeholder="Make" value={form.make ?? ''} onChange={handleInputChange} required />
-          <input type="text" name="model" placeholder="Model" value={form.model ?? ''} onChange={handleInputChange} required />
-          <input type="number" name="year" placeholder="Year" value={form.year ?? currentYear} onChange={handleInputChange} required />
-          <input type="text" name="vin" placeholder="VIN" value={form.vin ?? ''} onChange={handleInputChange} required />
-          <input type="text" name="license_plate" placeholder="License Plate" value={form.license_plate ?? ''} onChange={handleInputChange} required />
-          <input type="text" name="color" placeholder="Color" value={form.color ?? ''} onChange={handleInputChange} required />
-          <input type="text" name="owner" placeholder="Owner" value={form.owner ?? ''} onChange={handleInputChange} required />
-          <button type="submit">Save</button>
-          <button type="button" onClick={handleCancel}>Cancel</button>
-        </form>
-      ) : (
-        <>
-          <dl>
-            <dt>VIN</dt><dd>{car.vin}</dd>
-            <dt>License Plate</dt><dd>{car.license_plate}</dd>
-            <dt>Color</dt><dd>{car.color}</dd>
-            <dt>Owner</dt><dd>{car.owner}</dd>
-          </dl>
-          <button onClick={() => setEditing(true)}>Edit</button>
-          <button onClick={handleDelete}>Delete</button>
-        </>
+      <div className="form-section">
+        <div className="form-section-title">Identity</div>
+        <div className="detail-grid" style={{ padding: '20px' }}>
+          <DetailField label="Make" value={car.make} />
+          <DetailField label="Model" value={car.model} />
+          <DetailField label="Year" value={car.year} />
+          <DetailField label="Trim" value={car.trim} />
+          <DetailField label="License Plate" value={car.license_plate} />
+          <DetailField label="VIN" value={car.vin} />
+          <DetailField label="Color" value={car.color} />
+          <DetailField label="Owner" value={car.owner} />
+        </div>
+      </div>
+
+      <div className="form-section">
+        <div className="form-section-title">Specifications</div>
+        <div className="detail-grid" style={{ padding: '20px' }}>
+          <DetailField label="Engine" value={car.engine} />
+          <DetailField label="Transmission" value={car.transmission} />
+          <DetailField label="Drivetrain" value={car.drivetrain} />
+          <DetailField label="Fuel Type" value={car.fuel_type} />
+        </div>
+      </div>
+
+      <div className="form-section">
+        <div className="form-section-title">Purchase Info</div>
+        <div className="detail-grid" style={{ padding: '20px' }}>
+          <DetailField label="Purchase Date" value={fmtDate(car.purchase_date)} />
+          <DetailField label="Purchase Price" value={fmtCurrency(car.purchase_price)} />
+          <DetailField label="Mileage at Purchase" value={fmtMileage(car.purchase_mileage)} />
+          <DetailField label="Current Mileage" value={fmtMileage(car.current_mileage)} />
+        </div>
+      </div>
+
+      {car.notes && (
+        <div className="form-section">
+          <div className="form-section-title">Notes</div>
+          <div style={{ padding: '16px 20px', fontSize: '14px', color: 'var(--text-2)', whiteSpace: 'pre-wrap' }}>
+            {car.notes}
+          </div>
+        </div>
       )}
     </div>
   );
+}
+
+// ── Service History Tab ───────────────────────────────────────────────────────
+
+function HistoryTab({ car, records }: { car: Car; records: ServiceRecord[] }) {
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+        <Link to={`/cars/${car.id}/services/new`} className="btn btn-primary">＋ Log Service</Link>
+      </div>
+
+      {records.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-state-icon">🔧</div>
+          <div className="empty-state-title">No service records yet</div>
+          <div className="empty-state-sub">Start logging maintenance to track your car's history.</div>
+          <Link to={`/cars/${car.id}/services/new`} className="btn btn-primary">Log First Service</Link>
+        </div>
+      ) : (
+        <div className="timeline">
+          {records.map((r) => (
+            <div key={r.id} className="timeline-item">
+              <div className="timeline-left">
+                <div className="timeline-dot" />
+                <div className="timeline-line" />
+              </div>
+              <Link to={`/cars/${car.id}/services/${r.id}`} className="timeline-content">
+                <div className="timeline-header">
+                  <div className="timeline-title">{r.title}</div>
+                  <div className="timeline-cost">{fmtCurrency(r.total_cost)}</div>
+                </div>
+                <div className="timeline-meta">
+                  <span>📅 {fmtDate(r.date)}</span>
+                  {r.mileage_at_service && <span>🛣 {fmtMileage(r.mileage_at_service)}</span>}
+                  {r.shop_name && <span>🏪 {r.shop_name}</span>}
+                  {r.parts.length > 0 && <span>🔩 {r.parts.length} part{r.parts.length !== 1 ? 's' : ''}</span>}
+                  {r.attachments.length > 0 && <span>📎 {r.attachments.length} file{r.attachments.length !== 1 ? 's' : ''}</span>}
+                </div>
+              </Link>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Schedule Tab ──────────────────────────────────────────────────────────────
+
+const EMPTY_TASK: ScheduledMaintenanceCreate = {
+  title: '', description: '', due_date: '', due_mileage: undefined, interval_months: undefined, interval_km: undefined,
 };
 
-export default CarDetailPage;
+function getStatus(item: ScheduledMaintenance, currentMileage?: number) {
+  if (item.is_completed) return 'done';
+  const today = new Date();
+  if (item.due_date) {
+    const due = new Date(item.due_date + 'T00:00:00');
+    const days = Math.ceil((due.getTime() - today.getTime()) / 86400000);
+    if (days < 0) return 'overdue';
+    if (days <= 30) return 'due-soon';
+  }
+  if (item.due_mileage && currentMileage) {
+    const km = item.due_mileage - currentMileage;
+    if (km < 0) return 'overdue';
+    if (km <= 1000) return 'due-soon';
+  }
+  return 'ok';
+}
+
+function ScheduleTab({ car, items, onRefresh }: { car: Car; items: ScheduledMaintenance[]; onRefresh: () => void }) {
+  const [adding, setAdding] = useState(false);
+  const [form, setForm] = useState<ScheduledMaintenanceCreate>(EMPTY_TASK);
+  const [submitting, setSubmitting] = useState(false);
+
+  const set = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === 'number' ? (value === '' ? undefined : Number(value)) : value,
+    }));
+  };
+
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    const payload = Object.fromEntries(
+      Object.entries(form).filter(([, v]) => v !== '' && v !== undefined)
+    ) as ScheduledMaintenanceCreate;
+    await createMaintenance(car.id, payload);
+    setForm(EMPTY_TASK);
+    setAdding(false);
+    setSubmitting(false);
+    onRefresh();
+  };
+
+  const toggle = async (item: ScheduledMaintenance) => {
+    await updateMaintenance(item.id, { is_completed: !item.is_completed });
+    onRefresh();
+  };
+
+  const remove = async (id: number) => {
+    await deleteMaintenance(id);
+    onRefresh();
+  };
+
+  const statusBadge = (s: string) => {
+    if (s === 'overdue') return <span className="badge badge-overdue">Overdue</span>;
+    if (s === 'due-soon') return <span className="badge badge-due-soon">Due Soon</span>;
+    if (s === 'done') return <span className="badge badge-done">Done</span>;
+    return null;
+  };
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+        <button className="btn btn-primary" onClick={() => setAdding((v) => !v)}>
+          {adding ? 'Cancel' : '＋ Add Task'}
+        </button>
+      </div>
+
+      {adding && (
+        <form onSubmit={handleAdd}>
+          <div className="form-section" style={{ marginBottom: '20px' }}>
+            <div className="form-section-title">New Scheduled Task</div>
+            <div className="form-grid">
+              <div className="form-field full-width">
+                <label>Title *</label>
+                <input type="text" name="title" value={form.title} onChange={set} required placeholder="e.g. Oil Change" />
+              </div>
+              <div className="form-field full-width">
+                <label>Description</label>
+                <textarea name="description" value={form.description} onChange={set} placeholder="Optional details..." />
+              </div>
+              <div className="form-field">
+                <label>Due Date</label>
+                <input type="date" name="due_date" value={form.due_date ?? ''} onChange={set} />
+              </div>
+              <div className="form-field">
+                <label>Due Mileage (km)</label>
+                <input type="number" name="due_mileage" value={form.due_mileage ?? ''} onChange={set} min={0} />
+              </div>
+              <div className="form-field">
+                <label>Repeat Every (months)</label>
+                <input type="number" name="interval_months" value={form.interval_months ?? ''} onChange={set} min={1} />
+              </div>
+              <div className="form-field">
+                <label>Repeat Every (km)</label>
+                <input type="number" name="interval_km" value={form.interval_km ?? ''} onChange={set} min={1} />
+              </div>
+            </div>
+            <div className="form-actions">
+              <button type="button" className="btn btn-ghost" onClick={() => setAdding(false)}>Cancel</button>
+              <button type="submit" className="btn btn-primary" disabled={submitting}>
+                {submitting ? 'Saving…' : 'Add Task'}
+              </button>
+            </div>
+          </div>
+        </form>
+      )}
+
+      {items.length === 0 && !adding ? (
+        <div className="empty-state">
+          <div className="empty-state-icon">📅</div>
+          <div className="empty-state-title">No scheduled tasks</div>
+          <div className="empty-state-sub">Add maintenance reminders to stay on top of your car's needs.</div>
+        </div>
+      ) : (
+        items.map((item) => {
+          const status = getStatus(item, car.current_mileage);
+          return (
+            <div key={item.id} className={`maintenance-item ${item.is_completed ? 'completed' : ''}`}>
+              <input
+                type="checkbox"
+                checked={item.is_completed}
+                onChange={() => toggle(item)}
+                style={{ width: '16px', height: '16px', accentColor: 'var(--accent)', flexShrink: 0 }}
+              />
+              <div className="maintenance-item-info">
+                <div className="maintenance-item-title">{item.title}</div>
+                <div className="maintenance-item-meta">
+                  {item.due_date && <span>📅 {fmtDate(item.due_date)} </span>}
+                  {item.due_mileage && <span> · 🛣 {fmtMileage(item.due_mileage)}</span>}
+                  {item.interval_months && <span> · ↻ every {item.interval_months} mo</span>}
+                  {item.interval_km && <span> · ↻ every {item.interval_km.toLocaleString()} km</span>}
+                  {item.description && <span> · {item.description}</span>}
+                </div>
+              </div>
+              {statusBadge(status)}
+              <button className="btn btn-sm btn-ghost btn-icon" onClick={() => remove(item.id)} title="Delete">✕</button>
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+
+export default function CarDetailPage() {
+  const { carId } = useParams<{ carId: string }>();
+  const navigate = useNavigate();
+  const [car, setCar] = useState<Car | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [tab, setTab] = useState<Tab>('overview');
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const refreshRef = useRef(0);
+
+  const load = () => {
+    if (!carId) return;
+    getCar(Number(carId))
+      .then(setCar)
+      .catch(() => setError('Car not found.'))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { load(); }, [carId, refreshRef.current]);
+
+  const handleDelete = async () => {
+    await deleteCar(Number(carId));
+    navigate('/');
+  };
+
+  if (loading) return <div className="loading-page"><span className="spinner" /></div>;
+  if (error || !car) return (
+    <div>
+      <div className="error-msg">{error ?? 'Car not found.'}</div>
+      <Link to="/" className="back-link">← Back to Garage</Link>
+    </div>
+  );
+
+  return (
+    <div>
+      {confirmDelete && (
+        <ConfirmDialog
+          message={`Delete ${car.year} ${car.make} ${car.model}? This will also delete all service records and scheduled maintenance.`}
+          onConfirm={handleDelete}
+          onCancel={() => setConfirmDelete(false)}
+          confirmLabel="Delete"
+          danger
+        />
+      )}
+
+      <Link to="/" className="back-link">← Garage</Link>
+
+      <div className="page-header">
+        <div>
+          <div className="page-title">{car.year} {car.make} {car.model}</div>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
+            <span className="badge badge-plate">{car.license_plate}</span>
+            {car.trim && <span style={{ fontSize: '13px', color: 'var(--text-2)' }}>{car.trim}</span>}
+          </div>
+        </div>
+        <div className="page-header-actions">
+          <Link to={`/cars/${car.id}/edit`} className="btn btn-secondary">Edit</Link>
+          <button className="btn btn-danger" onClick={() => setConfirmDelete(true)}>Delete</button>
+        </div>
+      </div>
+
+      <div className="tabs">
+        <button className={`tab ${tab === 'overview' ? 'active' : ''}`} onClick={() => setTab('overview')}>Overview</button>
+        <button className={`tab ${tab === 'history' ? 'active' : ''}`} onClick={() => setTab('history')}>
+          Service History {car.service_records.length > 0 && `(${car.service_records.length})`}
+        </button>
+        <button className={`tab ${tab === 'schedule' ? 'active' : ''}`} onClick={() => setTab('schedule')}>
+          Schedule {car.scheduled_maintenance.length > 0 && `(${car.scheduled_maintenance.filter(m => !m.is_completed).length})`}
+        </button>
+      </div>
+
+      {tab === 'overview' && <OverviewTab car={car} />}
+      {tab === 'history' && <HistoryTab car={car} records={car.service_records} />}
+      {tab === 'schedule' && (
+        <ScheduleTab
+          car={car}
+          items={car.scheduled_maintenance}
+          onRefresh={load}
+        />
+      )}
+    </div>
+  );
+}

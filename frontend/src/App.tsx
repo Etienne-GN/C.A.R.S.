@@ -1,29 +1,25 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import CarListPage from './pages/CarListPage';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import Layout from './components/Layout';
 import CarDetailPage from './pages/CarDetailPage';
+import CarFormPage from './pages/CarFormPage';
+import DashboardPage from './pages/DashboardPage';
+import ServiceDetailPage from './pages/ServiceDetailPage';
+import ServiceFormPage from './pages/ServiceFormPage';
 
-function App() {
+export default function App() {
   return (
-    <Router>
-      <nav>
-        <ul>
-          <li>
-            <Link to="/">Home</Link>
-          </li>
-          <li>
-            <Link to="/cars">My Garage</Link>
-          </li>
-        </ul>
-      </nav>
-
+    <BrowserRouter>
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/cars" element={<CarListPage />} />
-        <Route path="/cars/:carId" element={<CarDetailPage />} />
+        <Route element={<Layout />}>
+          <Route index element={<DashboardPage />} />
+          <Route path="cars/new" element={<CarFormPage />} />
+          <Route path="cars/:carId" element={<CarDetailPage />} />
+          <Route path="cars/:carId/edit" element={<CarFormPage />} />
+          <Route path="cars/:carId/services/new" element={<ServiceFormPage />} />
+          <Route path="cars/:carId/services/:serviceId" element={<ServiceDetailPage />} />
+          <Route path="cars/:carId/services/:serviceId/edit" element={<ServiceFormPage />} />
+        </Route>
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
 }
-
-export default App;

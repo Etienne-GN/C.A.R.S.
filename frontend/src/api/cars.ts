@@ -1,10 +1,8 @@
-import axios from 'axios';
-import type { Car, CarCreate, CarUpdate } from '../types/car';
+import api from './client';
+import type { Car, CarCreate, CarSummary, CarUpdate } from '../types/car';
 
-const api = axios.create();
-
-export const getCars = (signal?: AbortSignal): Promise<Car[]> =>
-  api.get<Car[]>('/cars/', { signal }).then((r) => r.data);
+export const getCars = (signal?: AbortSignal): Promise<CarSummary[]> =>
+  api.get<CarSummary[]>('/cars/', { signal }).then((r) => r.data);
 
 export const getCar = (id: number, signal?: AbortSignal): Promise<Car> =>
   api.get<Car>(`/cars/${id}`, { signal }).then((r) => r.data);

@@ -1,10 +1,2 @@
-const HomePage = () => {
-  return (
-    <div>
-      <h2>Welcome to C.A.R.S.</h2>
-      <p>Manage your car service history with ease.</p>
-    </div>
-  );
-};
-
-export default HomePage;
+import { Navigate } from 'react-router-dom';
+export default function HomePage() { return <Navigate to="/" replace />; }
