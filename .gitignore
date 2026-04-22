@@ -32,3 +32,7 @@ env/
 
 # Uploads (user files, live on server)
 backend/uploads/
+
+# Frontend build artifacts
+frontend/node_modules/
+frontend/dist/
