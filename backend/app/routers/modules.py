@@ -23,7 +23,7 @@ async def _enabled_keys(db: AsyncSession) -> set[str]:
 
 @router.get("/")
 async def list_modules(db: AsyncSession = Depends(get_db)):
-    enabled = _enabled_keys_sync := await _enabled_keys(db)
+    enabled = await _enabled_keys(db)
     return [
         {**asdict(m), "is_enabled": m.key in enabled}
         for m in module_manager.get_modules()
