@@ -7,8 +7,8 @@ from sqlalchemy import text
 
 from .config import settings
 from .database import engine
-from . import models
-from .routers import cars, services, maintenance
+from . import models, module_manager
+from .routers import cars, services, maintenance, modules
 
 
 @asynccontextmanager
@@ -56,6 +56,9 @@ app.add_middleware(
 app.include_router(cars.router)
 app.include_router(services.router)
 app.include_router(maintenance.router)
+app.include_router(modules.router)
+
+module_manager.register_module_routes(app)
 
 settings.upload_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=str(settings.upload_dir)), name="uploads")

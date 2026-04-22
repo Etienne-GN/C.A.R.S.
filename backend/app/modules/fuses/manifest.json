@@ -1,0 +1,7 @@
+{
+  "key": "fuses",
+  "title": "Fuse Panels",
+  "icon": "⚡",
+  "description": "Reference fusebox and relay diagrams.",
+  "route": "/modules/fuses"
+}

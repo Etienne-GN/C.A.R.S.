@@ -11,6 +11,7 @@ export default defineConfig({
       '/maintenance': 'http://localhost:8000',
       '/attachments': 'http://localhost:8000',
       '/uploads':     'http://localhost:8000',
+      '/modules':     'http://localhost:8000',
     },
   },
 })
