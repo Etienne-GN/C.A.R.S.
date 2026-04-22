@@ -1,6 +1,4 @@
-from __future__ import annotations
-
-from datetime import date, datetime
+from datetime import date as _Date, datetime
 from typing import Optional
 
 from pydantic import BaseModel, Field, computed_field
@@ -62,7 +60,7 @@ class Attachment(BaseModel):
 
 class ServiceRecordBase(BaseModel):
     title: str = Field(min_length=1, max_length=200)
-    date: date
+    date: _Date
     mileage_at_service: Optional[int] = Field(default=None, ge=0)
     shop_name: Optional[str] = Field(default=None, max_length=200)
     labor_cost: float = Field(default=0.0, ge=0)
@@ -75,7 +73,7 @@ class ServiceRecordCreate(ServiceRecordBase):
 
 class ServiceRecordUpdate(BaseModel):
     title: Optional[str] = Field(default=None, min_length=1, max_length=200)
-    date: Optional[date] = None
+    date: Optional[_Date] = None
     mileage_at_service: Optional[int] = Field(default=None, ge=0)
     shop_name: Optional[str] = Field(default=None, max_length=200)
     labor_cost: Optional[float] = Field(default=None, ge=0)
@@ -103,7 +101,7 @@ class ServiceRecord(ServiceRecordBase):
 class ScheduledMaintenanceBase(BaseModel):
     title: str = Field(min_length=1, max_length=200)
     description: Optional[str] = None
-    due_date: Optional[date] = None
+    due_date: Optional[_Date] = None
     due_mileage: Optional[int] = Field(default=None, ge=0)
     interval_months: Optional[int] = Field(default=None, ge=1)
     interval_km: Optional[int] = Field(default=None, ge=1)
@@ -116,7 +114,7 @@ class ScheduledMaintenanceCreate(ScheduledMaintenanceBase):
 class ScheduledMaintenanceUpdate(BaseModel):
     title: Optional[str] = Field(default=None, min_length=1, max_length=200)
     description: Optional[str] = None
-    due_date: Optional[date] = None
+    due_date: Optional[_Date] = None
     due_mileage: Optional[int] = Field(default=None, ge=0)
     interval_months: Optional[int] = Field(default=None, ge=1)
     interval_km: Optional[int] = Field(default=None, ge=1)
@@ -147,7 +145,7 @@ class CarBase(BaseModel):
     transmission: Optional[str] = Field(default=None, max_length=50)
     drivetrain: Optional[str] = Field(default=None, max_length=20)
     fuel_type: Optional[str] = Field(default=None, max_length=20)
-    purchase_date: Optional[date] = None
+    purchase_date: Optional[_Date] = None
     purchase_price: Optional[float] = Field(default=None, ge=0)
     purchase_mileage: Optional[int] = Field(default=None, ge=0)
     current_mileage: Optional[int] = Field(default=None, ge=0)
@@ -172,7 +170,7 @@ class CarUpdate(BaseModel):
     transmission: Optional[str] = Field(default=None, max_length=50)
     drivetrain: Optional[str] = Field(default=None, max_length=20)
     fuel_type: Optional[str] = Field(default=None, max_length=20)
-    purchase_date: Optional[date] = None
+    purchase_date: Optional[_Date] = None
     purchase_price: Optional[float] = Field(default=None, ge=0)
     purchase_mileage: Optional[int] = Field(default=None, ge=0)
     current_mileage: Optional[int] = Field(default=None, ge=0)
@@ -192,5 +190,5 @@ class CarSummary(CarBase):
     id: int
     service_count: int = 0
     total_spent: float = 0.0
-    last_service_date: Optional[date] = None
-    next_due_date: Optional[date] = None
+    last_service_date: Optional[_Date] = None
+    next_due_date: Optional[_Date] = None
