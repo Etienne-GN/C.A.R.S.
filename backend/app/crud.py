@@ -131,8 +131,16 @@ async def update_service_record(
     db_record = result.scalars().first()
     if db_record is None:
         return None
-    for key, value in record.model_dump(exclude_unset=True).items():
+    data = record.model_dump(exclude_unset=True)
+    new_parts = data.pop("parts", None)
+    for key, value in data.items():
         setattr(db_record, key, value)
+    if new_parts is not None:
+        await db.execute(
+            models.Part.__table__.delete().where(models.Part.service_record_id == service_id)
+        )
+        for part_data in new_parts:
+            db.add(models.Part(service_record_id=service_id, **part_data))
     await db.commit()
     return await get_service_record(db, service_id)
 

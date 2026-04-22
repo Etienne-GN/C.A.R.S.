@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { deleteCar, getCar } from '../api/cars';
+import { deleteCar, getCar, updateCar } from '../api/cars';
 import { createMaintenance, deleteMaintenance, updateMaintenance } from '../api/maintenance';
 import ConfirmDialog from '../components/ConfirmDialog';
 import type { Car } from '../types/car';
@@ -305,6 +305,7 @@ export default function CarDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('overview');
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [archiving, setArchiving] = useState(false);
   const refreshRef = useRef(0);
 
   const load = () => {
@@ -320,6 +321,14 @@ export default function CarDetailPage() {
   const handleDelete = async () => {
     await deleteCar(Number(carId));
     navigate('/');
+  };
+
+  const handleArchiveToggle = async () => {
+    if (!car) return;
+    setArchiving(true);
+    await updateCar(car.id, { is_archived: !car.is_archived });
+    await load();
+    setArchiving(false);
   };
 
   if (loading) return <div className="loading-page"><span className="spinner" /></div>;
@@ -346,14 +355,20 @@ export default function CarDetailPage() {
 
       <div className="page-header">
         <div>
-          <div className="page-title">{car.year} {car.make} {car.model}</div>
+          <div className="page-title" style={car.is_archived ? { opacity: 0.6 } : undefined}>
+            {car.year} {car.make} {car.model}
+          </div>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
             <span className="badge badge-plate">{car.license_plate}</span>
             {car.trim && <span style={{ fontSize: '13px', color: 'var(--text-2)' }}>{car.trim}</span>}
+            {car.is_archived && <span className="badge" style={{ background: '#3a3a3a', color: '#888' }}>Archived</span>}
           </div>
         </div>
         <div className="page-header-actions">
           <Link to={`/cars/${car.id}/edit`} className="btn btn-secondary">Edit</Link>
+          <button className="btn btn-secondary" onClick={handleArchiveToggle} disabled={archiving}>
+            {car.is_archived ? 'Unarchive' : 'Archive'}
+          </button>
           <button className="btn btn-danger" onClick={() => setConfirmDelete(true)}>Delete</button>
         </div>
       </div>

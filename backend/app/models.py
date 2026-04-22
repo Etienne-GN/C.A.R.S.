@@ -26,6 +26,7 @@ class Car(Base):
     purchase_mileage = Column(Integer)
     current_mileage = Column(Integer)
     notes = Column(Text)
+    is_archived = Column(Boolean, default=False, nullable=False)
 
     service_records = relationship("ServiceRecord", back_populates="car", cascade="all, delete-orphan", order_by="ServiceRecord.date.desc()")
     scheduled_maintenance = relationship("ScheduledMaintenance", back_populates="car", cascade="all, delete-orphan")

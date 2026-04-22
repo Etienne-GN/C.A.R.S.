@@ -32,6 +32,7 @@ async def lifespan(app: FastAPI):
             ("purchase_mileage", "INTEGER"),
             ("current_mileage", "INTEGER"),
             ("notes", "TEXT"),
+            ("is_archived", "BOOLEAN DEFAULT 0 NOT NULL"),
         ]
         for col, col_type in new_columns:
             if col not in existing:

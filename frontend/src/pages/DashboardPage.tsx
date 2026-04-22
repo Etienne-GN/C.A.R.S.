@@ -29,7 +29,11 @@ function dueBadge(car: CarSummary) {
 
 function CarCard({ car }: { car: CarSummary }) {
   return (
-    <Link to={`/cars/${car.id}`} className="car-card">
+    <Link
+      to={`/cars/${car.id}`}
+      className="car-card"
+      style={car.is_archived ? { opacity: 0.45, filter: 'grayscale(0.5)' } : undefined}
+    >
       <div className="car-card-header">
         <div>
           <div className="car-card-title">{car.year} {car.make} {car.model}</div>
@@ -40,7 +44,9 @@ function CarCard({ car }: { car: CarSummary }) {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
           <span className="badge badge-plate">{car.license_plate}</span>
-          {dueBadge(car)}
+          {car.is_archived
+            ? <span className="badge" style={{ background: '#2a2a2a', color: '#666' }}>Archived</span>
+            : dueBadge(car)}
         </div>
       </div>
       <div className="car-card-stats">
@@ -86,7 +92,10 @@ export default function DashboardPage() {
       <div className="page-header">
         <div>
           <div className="page-title">My Garage</div>
-          <div className="page-subtitle">{cars.length} vehicle{cars.length !== 1 ? 's' : ''}</div>
+          <div className="page-subtitle">
+            {cars.filter(c => !c.is_archived).length} active
+            {cars.some(c => c.is_archived) && `, ${cars.filter(c => c.is_archived).length} archived`}
+          </div>
         </div>
         <Link to="/cars/new" className="btn btn-primary">＋ Add Car</Link>
       </div>
@@ -102,7 +111,9 @@ export default function DashboardPage() {
         </div>
       ) : (
         <div className="car-grid">
-          {cars.map((car) => <CarCard key={car.id} car={car} />)}
+          {[...cars]
+            .sort((a, b) => (a.is_archived ? 1 : 0) - (b.is_archived ? 1 : 0))
+            .map((car) => <CarCard key={car.id} car={car} />)}
         </div>
       )}
     </div>

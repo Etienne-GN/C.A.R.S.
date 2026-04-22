@@ -17,6 +17,7 @@ export interface Car {
   purchase_mileage?: number;
   current_mileage?: number;
   notes?: string;
+  is_archived?: boolean;
   service_records: import('./service').ServiceRecord[];
   scheduled_maintenance: import('./maintenance').ScheduledMaintenance[];
 }
@@ -36,6 +37,7 @@ export interface CarSummary {
   total_spent: number;
   last_service_date?: string;
   next_due_date?: string;
+  is_archived?: boolean;
 }
 
 export interface CarCreate {
@@ -56,6 +58,7 @@ export interface CarCreate {
   purchase_mileage?: number;
   current_mileage?: number;
   notes?: string;
+  is_archived?: boolean;
 }
 
 export type CarUpdate = Partial<CarCreate>;

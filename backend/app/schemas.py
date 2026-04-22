@@ -78,6 +78,7 @@ class ServiceRecordUpdate(BaseModel):
     shop_name: Optional[str] = Field(default=None, max_length=200)
     labor_cost: Optional[float] = Field(default=None, ge=0)
     notes: Optional[str] = None
+    parts: Optional[list[PartCreate]] = None
 
 
 class ServiceRecord(ServiceRecordBase):
@@ -149,6 +150,7 @@ class CarBase(BaseModel):
     purchase_mileage: Optional[int] = Field(default=None, ge=0)
     current_mileage: Optional[int] = Field(default=None, ge=0)
     notes: Optional[str] = None
+    is_archived: bool = False
 
 
 class CarCreate(CarBase):
@@ -173,6 +175,7 @@ class CarUpdate(BaseModel):
     purchase_mileage: Optional[int] = Field(default=None, ge=0)
     current_mileage: Optional[int] = Field(default=None, ge=0)
     notes: Optional[str] = None
+    is_archived: Optional[bool] = None
 
 
 class Car(CarBase):
