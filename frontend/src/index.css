@@ -587,6 +587,22 @@ select option { background: var(--surface-2); }
 .cost-row-label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.4px; }
 .cost-row-value { font-size: 15px; font-weight: 700; color: var(--accent); }
 
+/* ── Print ───────────────────────────────────────────────────────────────── */
+
+@media print {
+  body { background: #fff !important; color: #000 !important; font-size: 12px; }
+  .sidebar, .back-link, .page-header-actions, .btn, .upload-zone, input[type="file"], .tabs { display: none !important; }
+  .main { margin-left: 0 !important; padding: 0 !important; }
+  .layout { display: block !important; }
+  .form-section { border: 1px solid #ccc !important; background: #fff !important; break-inside: avoid; margin-bottom: 16px; }
+  .form-section-title { background: #f0f0f0 !important; color: #000 !important; }
+  .parts-table th, .parts-table td { border-color: #ccc !important; color: #000 !important; }
+  .cost-row { background: #f8f8f8 !important; border-color: #ccc !important; }
+  .cost-row-label, .cost-row-value { color: #000 !important; }
+  .page-title { font-size: 20px !important; color: #000 !important; }
+  a { color: #000 !important; text-decoration: none !important; }
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 
 @media (max-width: 900px) {

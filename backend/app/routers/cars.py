@@ -1,9 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException
+import uuid
+from pathlib import Path
+
+import aiofiles
+from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import crud, schemas
+from ..config import settings
 from ..database import get_db
+
+ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
+MAX_PHOTO_SIZE = 10 * 1024 * 1024  # 10 MB
 
 router = APIRouter(prefix="/cars", tags=["cars"])
 
@@ -47,3 +55,41 @@ async def delete_car(car_id: int, db: AsyncSession = Depends(get_db)):
     car = await crud.delete_car(db, car_id)
     if car is None:
         raise HTTPException(status_code=404, detail="Car not found.")
+
+
+@router.post("/{car_id}/photo", response_model=schemas.Car)
+async def upload_car_photo(car_id: int, file: UploadFile, db: AsyncSession = Depends(get_db)):
+    car = await crud.get_car(db, car_id)
+    if car is None:
+        raise HTTPException(status_code=404, detail="Car not found.")
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(status_code=400, detail="Only JPEG, PNG, and WebP images are allowed.")
+
+    data = await file.read()
+    if len(data) > MAX_PHOTO_SIZE:
+        raise HTTPException(status_code=400, detail="Photo must be under 10 MB.")
+
+    ext = Path(file.filename or "photo.jpg").suffix or ".jpg"
+    filename = f"car_{car_id}_{uuid.uuid4().hex}{ext}"
+    dest = settings.upload_dir / filename
+    async with aiofiles.open(dest, "wb") as f:
+        await f.write(data)
+
+    if car.photo_filename:
+        old = settings.upload_dir / car.photo_filename
+        if old.exists():
+            old.unlink()
+
+    return await crud.update_car(db, car_id, schemas.CarUpdate(photo_filename=filename))
+
+
+@router.delete("/{car_id}/photo", response_model=schemas.Car)
+async def delete_car_photo(car_id: int, db: AsyncSession = Depends(get_db)):
+    car = await crud.get_car(db, car_id)
+    if car is None:
+        raise HTTPException(status_code=404, detail="Car not found.")
+    if car.photo_filename:
+        old = settings.upload_dir / car.photo_filename
+        if old.exists():
+            old.unlink()
+    return await crud.update_car(db, car_id, schemas.CarUpdate(photo_filename=None))

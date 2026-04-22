@@ -1,0 +1,7 @@
+{
+  "key": "obd",
+  "title": "OBD Codes",
+  "icon": "🔌",
+  "description": "Searchable OBD-II diagnostic trouble code reference library.",
+  "route": "/modules/obd"
+}

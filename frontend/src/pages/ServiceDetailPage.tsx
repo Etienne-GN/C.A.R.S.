@@ -97,6 +97,7 @@ export default function ServiceDetailPage() {
           </div>
         </div>
         <div className="page-header-actions">
+          <button className="btn btn-secondary" onClick={() => window.print()}>🖨 Print</button>
           <Link to={`/cars/${carId}/services/${serviceId}/edit`} className="btn btn-secondary">Edit</Link>
           <button className="btn btn-danger" onClick={() => setConfirmDelete(true)}>Delete</button>
         </div>

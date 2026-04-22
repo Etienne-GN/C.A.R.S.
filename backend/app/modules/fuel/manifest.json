@@ -1,0 +1,7 @@
+{
+  "key": "fuel",
+  "title": "Fuel Log",
+  "icon": "⛽",
+  "description": "Track fill-ups and calculate fuel efficiency (L/100km) and cost per km.",
+  "route": "/modules/fuel"
+}

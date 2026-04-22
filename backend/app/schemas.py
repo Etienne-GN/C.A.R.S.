@@ -153,6 +153,7 @@ class CarBase(BaseModel):
     current_mileage: Optional[int] = Field(default=None, ge=0)
     notes: Optional[str] = None
     is_archived: bool = False
+    photo_filename: Optional[str] = None
 
 
 class CarCreate(CarBase):
@@ -178,6 +179,7 @@ class CarUpdate(BaseModel):
     current_mileage: Optional[int] = Field(default=None, ge=0)
     notes: Optional[str] = None
     is_archived: Optional[bool] = None
+    photo_filename: Optional[str] = None
 
 
 class Car(CarBase):

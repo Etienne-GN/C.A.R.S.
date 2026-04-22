@@ -18,6 +18,7 @@ export interface Car {
   current_mileage?: number;
   notes?: string;
   is_archived?: boolean;
+  photo_filename?: string;
   service_records: import('./service').ServiceRecord[];
   scheduled_maintenance: import('./maintenance').ScheduledMaintenance[];
 }
@@ -38,6 +39,7 @@ export interface CarSummary {
   last_service_date?: string;
   next_due_date?: string;
   is_archived?: boolean;
+  photo_filename?: string;
 }
 
 export interface CarCreate {
