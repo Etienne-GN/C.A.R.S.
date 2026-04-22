@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { getModules } from '../api/modules';
 import type { ModuleInfo } from '../types/module';
 
@@ -10,12 +10,13 @@ const NAV = [
 
 export default function Layout() {
   const [modules, setModules] = useState<ModuleInfo[]>([]);
+  const location = useLocation();
 
   useEffect(() => {
     const ctrl = new AbortController();
     getModules(ctrl.signal).then(setModules).catch(() => setModules([]));
     return () => ctrl.abort();
-  }, []);
+  }, [location.pathname]);
 
   const activeModules = modules.filter((m) => m.is_enabled);
 
