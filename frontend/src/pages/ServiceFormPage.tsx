@@ -24,6 +24,7 @@ export default function ServiceFormPage() {
   const [mileage, setMileage] = useState('');
   const [shop, setShop] = useState('');
   const [laborCost, setLaborCost] = useState('0');
+  const [laborHours, setLaborHours] = useState('0');
   const [notes, setNotes] = useState('');
   const [parts, setParts] = useState<PartRow[]>([newPart()]);
   const [loading, setLoading] = useState(true);
@@ -40,6 +41,7 @@ export default function ServiceFormPage() {
           setMileage(s.mileage_at_service?.toString() ?? '');
           setShop(s.shop_name ?? '');
           setLaborCost(s.labor_cost.toString());
+          setLaborHours(s.labor_hours.toString());
           setNotes(s.notes ?? '');
           if (s.parts.length > 0) {
             setParts(s.parts.map((p) => ({ ...p, _key: p.id })));
@@ -86,6 +88,7 @@ export default function ServiceFormPage() {
       mileage_at_service: mileage ? Number(mileage) : undefined,
       shop_name: shop || undefined,
       labor_cost: Number(laborCost) || 0,
+      labor_hours: Number(laborHours) || 0,
       notes: notes || undefined,
       parts: cleanParts,
     };
@@ -140,6 +143,10 @@ export default function ServiceFormPage() {
               <label>Labour Cost (CAD)</label>
               <input type="number" value={laborCost} onChange={(e) => setLaborCost(e.target.value)} min={0} step={0.01} />
             </div>
+            <div className="form-field">
+              <label>Work Hours</label>
+              <input type="number" value={laborHours} onChange={(e) => setLaborHours(e.target.value)} min={0} step={0.25} placeholder="0.0" />
+            </div>
             <div className="form-field full-width">
               <label>Notes</label>
               <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="What was done, observations, etc." />
@@ -159,7 +166,7 @@ export default function ServiceFormPage() {
                   <th style={{ minWidth: '160px' }}>Part Name</th>
                   <th style={{ minWidth: '100px' }}>Brand</th>
                   <th style={{ minWidth: '110px' }}>Part #</th>
-                  <th style={{ width: '60px' }}>Qty</th>
+                  <th style={{ width: '80px' }}>Qty</th>
                   <th style={{ width: '100px' }}>Unit Cost</th>
                   <th style={{ minWidth: '140px' }}>Supplier</th>
                   <th style={{ width: '32px' }}></th>
@@ -171,7 +178,7 @@ export default function ServiceFormPage() {
                     <td><input type="text" value={p.name} onChange={(e) => updatePart(p._key, 'name', e.target.value)} placeholder="e.g. Oil Filter" /></td>
                     <td><input type="text" value={p.brand ?? ''} onChange={(e) => updatePart(p._key, 'brand', e.target.value)} placeholder="Brand" /></td>
                     <td><input type="text" value={p.part_number ?? ''} onChange={(e) => updatePart(p._key, 'part_number', e.target.value)} placeholder="Part #" /></td>
-                    <td><input type="number" value={p.quantity} onChange={(e) => updatePart(p._key, 'quantity', Number(e.target.value))} min={1} /></td>
+                    <td><input type="number" value={p.quantity} onChange={(e) => updatePart(p._key, 'quantity', Number(e.target.value))} min={1} style={{ width: '70px' }} /></td>
                     <td><input type="number" value={p.unit_cost} onChange={(e) => updatePart(p._key, 'unit_cost', Number(e.target.value))} min={0} step={0.01} /></td>
                     <td><input type="text" value={p.supplier ?? ''} onChange={(e) => updatePart(p._key, 'supplier', e.target.value)} placeholder="e.g. RockAuto" /></td>
                     <td>

@@ -4,4 +4,5 @@ export interface ModuleInfo {
   icon: string;
   description: string;
   route: string;
+  is_enabled: boolean;
 }

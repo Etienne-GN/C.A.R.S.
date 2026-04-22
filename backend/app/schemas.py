@@ -64,6 +64,7 @@ class ServiceRecordBase(BaseModel):
     mileage_at_service: Optional[int] = Field(default=None, ge=0)
     shop_name: Optional[str] = Field(default=None, max_length=200)
     labor_cost: float = Field(default=0.0, ge=0)
+    labor_hours: float = Field(default=0.0, ge=0)
     notes: Optional[str] = None
 
 
@@ -77,6 +78,7 @@ class ServiceRecordUpdate(BaseModel):
     mileage_at_service: Optional[int] = Field(default=None, ge=0)
     shop_name: Optional[str] = Field(default=None, max_length=200)
     labor_cost: Optional[float] = Field(default=None, ge=0)
+    labor_hours: Optional[float] = Field(default=None, ge=0)
     notes: Optional[str] = None
     parts: Optional[list[PartCreate]] = None
 

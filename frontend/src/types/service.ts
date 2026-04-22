@@ -41,6 +41,7 @@ export interface ServiceRecord {
   mileage_at_service?: number;
   shop_name?: string;
   labor_cost: number;
+  labor_hours: number;
   notes?: string;
   created_at: string;
   total_cost: number;
@@ -54,6 +55,7 @@ export interface ServiceRecordCreate {
   mileage_at_service?: number;
   shop_name?: string;
   labor_cost: number;
+  labor_hours: number;
   notes?: string;
   parts: PartCreate[];
 }

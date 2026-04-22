@@ -4,8 +4,8 @@ import { getModules } from '../api/modules';
 import type { ModuleInfo } from '../types/module';
 
 const NAV = [
-  { to: '/',         icon: '🏠', label: 'Dashboard' },
-  { to: '/cars/new', icon: '➕', label: 'Add Car'   },
+  { to: '/',        icon: '🏠', label: 'Garage'  },
+  { to: '/modules', icon: '🧩', label: 'Modules' },
 ];
 
 export default function Layout() {
@@ -16,6 +16,8 @@ export default function Layout() {
     getModules(ctrl.signal).then(setModules).catch(() => setModules([]));
     return () => ctrl.abort();
   }, []);
+
+  const activeModules = modules.filter((m) => m.is_enabled);
 
   return (
     <div className="layout">
@@ -37,12 +39,12 @@ export default function Layout() {
             </NavLink>
           ))}
 
-          {modules.length > 0 && (
+          {activeModules.length > 0 && (
             <>
               <div style={{ marginTop: '20px', padding: '8px 16px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-3, #777)' }}>
-                Modules
+                Module
               </div>
-              {modules.map((m) => (
+              {activeModules.map((m) => (
                 <NavLink
                   key={m.key}
                   to={m.route}

@@ -108,7 +108,10 @@ export default function ServiceDetailPage() {
       <div className="cost-row" style={{ marginBottom: '24px' }}>
         <div className="cost-row-item">
           <span className="cost-row-label">Labour</span>
-          <span className="cost-row-value" style={{ fontSize: '14px', color: 'var(--text-2)' }}>{fmtCurrency(record.labor_cost)}</span>
+          <span className="cost-row-value" style={{ fontSize: '14px', color: 'var(--text-2)' }}>
+            {fmtCurrency(record.labor_cost)}
+            {record.labor_hours > 0 && <span style={{ fontSize: '12px', marginLeft: '6px', color: 'var(--text-3, #777)' }}>({record.labor_hours}h)</span>}
+          </span>
         </div>
         <div className="cost-row-item">
           <span className="cost-row-label">Parts</span>

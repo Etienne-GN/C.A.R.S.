@@ -38,6 +38,11 @@ async def lifespan(app: FastAPI):
             if col not in existing:
                 await conn.execute(text(f"ALTER TABLE cars ADD COLUMN {col} {col_type}"))
 
+        result = await conn.execute(text("PRAGMA table_info(service_records)"))
+        sr_existing = {row[1] for row in result}
+        if "labor_hours" not in sr_existing:
+            await conn.execute(text("ALTER TABLE service_records ADD COLUMN labor_hours REAL DEFAULT 0.0"))
+
     yield
 
     await engine.dispose()

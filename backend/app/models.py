@@ -42,6 +42,7 @@ class ServiceRecord(Base):
     mileage_at_service = Column(Integer)
     shop_name = Column(String(200))
     labor_cost = Column(Float, default=0.0)
+    labor_hours = Column(Float, default=0.0)
     notes = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
@@ -95,3 +96,10 @@ class ScheduledMaintenance(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     car = relationship("Car", back_populates="scheduled_maintenance")
+
+
+class ModuleStatus(Base):
+    __tablename__ = "module_statuses"
+
+    key = Column(String(50), primary_key=True)
+    is_enabled = Column(Boolean, default=False, nullable=False)
