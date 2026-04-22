@@ -3,12 +3,14 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { deleteCar, deleteCarPhoto, getCar, updateCar, uploadCarPhoto } from '../api/cars';
 import { createMaintenance, deleteMaintenance, updateMaintenance } from '../api/maintenance';
+import { createNote, deleteNote, updateNote } from '../api/notes';
 import ConfirmDialog from '../components/ConfirmDialog';
 import type { Car } from '../types/car';
 import type { ScheduledMaintenance, ScheduledMaintenanceCreate } from '../types/maintenance';
+import type { CarNote } from '../types/note';
 import type { ServiceRecord } from '../types/service';
 
-type Tab = 'overview' | 'history' | 'schedule';
+type Tab = 'overview' | 'history' | 'schedule' | 'notes';
 
 function fmtDate(d?: string) {
   if (!d) return '—';
@@ -107,6 +109,39 @@ function OverviewTab({ car }: { car: Car }) {
           <DetailField label="Transmission" value={car.transmission} />
           <DetailField label="Drivetrain" value={car.drivetrain} />
           <DetailField label="Fuel Type" value={car.fuel_type} />
+          <DetailField label="Horsepower" value={car.horsepower ? `${car.horsepower} hp` : null} />
+          <DetailField label="Torque" value={car.torque_lbft ? `${car.torque_lbft} lb-ft` : null} />
+          <DetailField label="Weight" value={car.weight_kg ? `${car.weight_kg} kg` : null} />
+          <DetailField label="0–100 km/h" value={car.zero_to_100_s ? `${car.zero_to_100_s} s` : null} />
+          <DetailField label="Top Speed" value={car.top_speed_kmh ? `${car.top_speed_kmh} km/h` : null} />
+        </div>
+      </div>
+
+      <div className="form-section">
+        <div className="form-section-title">Fuel Economy</div>
+        <div className="detail-grid" style={{ padding: '20px' }}>
+          <DetailField label="City" value={car.fuel_city} />
+          <DetailField label="Highway" value={car.fuel_highway} />
+          <DetailField label="Tank Capacity" value={car.fuel_tank_l ? `${car.fuel_tank_l} L` : null} />
+        </div>
+      </div>
+
+      <div className="form-section">
+        <div className="form-section-title">Fluids</div>
+        <div className="detail-grid" style={{ padding: '20px' }}>
+          <DetailField label="Oil Capacity" value={car.oil_capacity_l ? `${car.oil_capacity_l} L` : null} />
+          <DetailField label="Oil Type" value={car.oil_type} />
+          <DetailField label="Coolant Capacity" value={car.coolant_capacity_l ? `${car.coolant_capacity_l} L` : null} />
+        </div>
+      </div>
+
+      <div className="form-section">
+        <div className="form-section-title">Tires &amp; Brakes</div>
+        <div className="detail-grid" style={{ padding: '20px' }}>
+          <DetailField label="Summer Tires" value={car.tire_size_summer} />
+          <DetailField label="Winter Tires" value={car.tire_size_winter} />
+          <DetailField label="Front Disk" value={car.front_disk_mm ? `${car.front_disk_mm} mm` : null} />
+          <DetailField label="Rear Disk" value={car.rear_disk_mm ? `${car.rear_disk_mm} mm` : null} />
         </div>
       </div>
 
@@ -328,6 +363,157 @@ function ScheduleTab({ car, items, onRefresh }: { car: Car; items: ScheduledMain
   );
 }
 
+// ── Notes Tab ─────────────────────────────────────────────────────────────────
+
+function NotesTab({ car, notes, onRefresh }: { car: Car; notes: CarNote[]; onRefresh: () => void }) {
+  const [adding, setAdding] = useState(false);
+  const [form, setForm] = useState({ title: '', body: '' });
+  const [submitting, setSubmitting] = useState(false);
+  const [expanded, setExpanded] = useState<number | null>(null);
+  const [editing, setEditing] = useState<number | null>(null);
+  const [editForm, setEditForm] = useState({ title: '', body: '' });
+
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    await createNote(car.id, { title: form.title, body: form.body || undefined });
+    setForm({ title: '', body: '' });
+    setAdding(false);
+    setSubmitting(false);
+    onRefresh();
+  };
+
+  const startEdit = (note: CarNote) => {
+    setEditing(note.id);
+    setEditForm({ title: note.title, body: note.body ?? '' });
+    setExpanded(note.id);
+  };
+
+  const handleEdit = async (e: React.FormEvent, noteId: number) => {
+    e.preventDefault();
+    await updateNote(noteId, { title: editForm.title, body: editForm.body || undefined });
+    setEditing(null);
+    onRefresh();
+  };
+
+  const handleDelete = async (noteId: number) => {
+    await deleteNote(noteId);
+    if (expanded === noteId) setExpanded(null);
+    onRefresh();
+  };
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+        <button className="btn btn-primary" onClick={() => setAdding((v) => !v)}>
+          {adding ? 'Cancel' : '＋ Add Note'}
+        </button>
+      </div>
+
+      {adding && (
+        <form onSubmit={handleAdd}>
+          <div className="form-section" style={{ marginBottom: '20px' }}>
+            <div className="form-section-title">New Note</div>
+            <div className="form-grid">
+              <div className="form-field full-width">
+                <label>Title *</label>
+                <input
+                  type="text" value={form.title} required
+                  onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
+                  placeholder="e.g. Brake squeak at low speed"
+                />
+              </div>
+              <div className="form-field full-width">
+                <label>Body</label>
+                <textarea
+                  value={form.body} rows={4}
+                  onChange={(e) => setForm((p) => ({ ...p, body: e.target.value }))}
+                  placeholder="Details, observations, links…"
+                />
+              </div>
+            </div>
+            <div className="form-actions">
+              <button type="button" className="btn btn-ghost" onClick={() => setAdding(false)}>Cancel</button>
+              <button type="submit" className="btn btn-primary" disabled={submitting}>
+                {submitting ? 'Saving…' : 'Save Note'}
+              </button>
+            </div>
+          </div>
+        </form>
+      )}
+
+      {notes.length === 0 && !adding ? (
+        <div className="empty-state">
+          <div className="empty-state-icon">📝</div>
+          <div className="empty-state-title">No notes yet</div>
+          <div className="empty-state-sub">Jot down observations, quirks, or reference info for this vehicle.</div>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {notes.map((note) => (
+            <div key={note.id} className="form-section" style={{ marginBottom: 0 }}>
+              <div
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '12px',
+                  padding: '14px 20px', cursor: 'pointer', userSelect: 'none',
+                }}
+                onClick={() => setExpanded(expanded === note.id ? null : note.id)}
+              >
+                <span style={{ fontSize: '16px', flexShrink: 0 }}>{expanded === note.id ? '▾' : '▸'}</span>
+                <span style={{ flex: 1, fontWeight: 500, fontSize: '14px' }}>{note.title}</span>
+                <span style={{ fontSize: '12px', color: 'var(--text-2)', flexShrink: 0 }}>
+                  {new Date(note.created_at).toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' })}
+                </span>
+                <button
+                  className="btn btn-sm btn-ghost"
+                  style={{ fontSize: '11px', padding: '2px 8px', flexShrink: 0 }}
+                  onClick={(e) => { e.stopPropagation(); startEdit(note); }}
+                >Edit</button>
+                <button
+                  className="btn btn-sm btn-ghost btn-icon"
+                  onClick={(e) => { e.stopPropagation(); handleDelete(note.id); }}
+                  title="Delete"
+                >✕</button>
+              </div>
+
+              {expanded === note.id && (
+                <div style={{ padding: '0 20px 16px' }}>
+                  {editing === note.id ? (
+                    <form onSubmit={(e) => handleEdit(e, note.id)}>
+                      <div className="form-field" style={{ marginBottom: '8px' }}>
+                        <label>Title *</label>
+                        <input
+                          type="text" value={editForm.title} required
+                          onChange={(e) => setEditForm((p) => ({ ...p, title: e.target.value }))}
+                        />
+                      </div>
+                      <div className="form-field" style={{ marginBottom: '8px' }}>
+                        <label>Body</label>
+                        <textarea
+                          value={editForm.body} rows={5}
+                          onChange={(e) => setEditForm((p) => ({ ...p, body: e.target.value }))}
+                        />
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                        <button type="button" className="btn btn-ghost btn-sm" onClick={() => setEditing(null)}>Cancel</button>
+                        <button type="submit" className="btn btn-primary btn-sm">Save</button>
+                      </div>
+                    </form>
+                  ) : (
+                    <div style={{ fontSize: '14px', color: 'var(--text-2)', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
+                      {note.body || <span style={{ fontStyle: 'italic' }}>No body.</span>}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function CarDetailPage() {
@@ -457,6 +643,9 @@ export default function CarDetailPage() {
         <button className={`tab ${tab === 'schedule' ? 'active' : ''}`} onClick={() => setTab('schedule')}>
           Schedule {car.scheduled_maintenance.length > 0 && `(${car.scheduled_maintenance.filter(m => !m.is_completed).length})`}
         </button>
+        <button className={`tab ${tab === 'notes' ? 'active' : ''}`} onClick={() => setTab('notes')}>
+          Notes {car.car_notes.length > 0 && `(${car.car_notes.length})`}
+        </button>
       </div>
 
       {tab === 'overview' && <OverviewTab car={car} />}
@@ -465,6 +654,13 @@ export default function CarDetailPage() {
         <ScheduleTab
           car={car}
           items={car.scheduled_maintenance}
+          onRefresh={load}
+        />
+      )}
+      {tab === 'notes' && (
+        <NotesTab
+          car={car}
+          notes={car.car_notes}
           onRefresh={load}
         />
       )}

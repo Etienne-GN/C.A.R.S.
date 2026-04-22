@@ -29,8 +29,32 @@ class Car(Base):
     is_archived = Column(Boolean, default=False, nullable=False)
     photo_filename = Column(String(255))
 
+    # Performance
+    horsepower = Column(Integer)
+    torque_lbft = Column(Integer)
+    zero_to_100_s = Column(Float)
+    top_speed_kmh = Column(Integer)
+    weight_kg = Column(Integer)
+
+    # Fuel economy
+    fuel_city = Column(String(20))
+    fuel_highway = Column(String(20))
+    fuel_tank_l = Column(Float)
+
+    # Fluids
+    oil_capacity_l = Column(Float)
+    oil_type = Column(String(20))
+    coolant_capacity_l = Column(Float)
+
+    # Tires & Brakes
+    tire_size_summer = Column(String(30))
+    tire_size_winter = Column(String(30))
+    front_disk_mm = Column(Integer)
+    rear_disk_mm = Column(Integer)
+
     service_records = relationship("ServiceRecord", back_populates="car", cascade="all, delete-orphan", order_by="ServiceRecord.date.desc()")
     scheduled_maintenance = relationship("ScheduledMaintenance", back_populates="car", cascade="all, delete-orphan")
+    car_notes = relationship("CarNote", back_populates="car", cascade="all, delete-orphan", order_by="CarNote.created_at.desc()")
 
 
 class ServiceRecord(Base):
@@ -97,6 +121,19 @@ class ScheduledMaintenance(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     car = relationship("Car", back_populates="scheduled_maintenance")
+
+
+class CarNote(Base):
+    __tablename__ = "car_notes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    car_id = Column(Integer, ForeignKey("cars.id", ondelete="CASCADE"), nullable=False, index=True)
+    title = Column(String(200), nullable=False)
+    body = Column(Text)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    car = relationship("Car", back_populates="car_notes")
 
 
 class ModuleStatus(Base):

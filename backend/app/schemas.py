@@ -132,6 +132,29 @@ class ScheduledMaintenance(ScheduledMaintenanceBase):
     model_config = {"from_attributes": True}
 
 
+# ── Car Notes ─────────────────────────────────────────────────────────────────
+
+class CarNoteCreate(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    body: Optional[str] = None
+
+
+class CarNoteUpdate(BaseModel):
+    title: Optional[str] = Field(default=None, min_length=1, max_length=200)
+    body: Optional[str] = None
+
+
+class CarNote(BaseModel):
+    id: int
+    car_id: int
+    title: str
+    body: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
 # ── Cars ──────────────────────────────────────────────────────────────────────
 
 class CarBase(BaseModel):
@@ -154,6 +177,29 @@ class CarBase(BaseModel):
     notes: Optional[str] = None
     is_archived: bool = False
     photo_filename: Optional[str] = None
+
+    # Performance
+    horsepower: Optional[int] = None
+    torque_lbft: Optional[int] = None
+    zero_to_100_s: Optional[float] = None
+    top_speed_kmh: Optional[int] = None
+    weight_kg: Optional[int] = None
+
+    # Fuel economy
+    fuel_city: Optional[str] = Field(default=None, max_length=20)
+    fuel_highway: Optional[str] = Field(default=None, max_length=20)
+    fuel_tank_l: Optional[float] = None
+
+    # Fluids
+    oil_capacity_l: Optional[float] = None
+    oil_type: Optional[str] = Field(default=None, max_length=20)
+    coolant_capacity_l: Optional[float] = None
+
+    # Tires & Brakes
+    tire_size_summer: Optional[str] = Field(default=None, max_length=30)
+    tire_size_winter: Optional[str] = Field(default=None, max_length=30)
+    front_disk_mm: Optional[int] = None
+    rear_disk_mm: Optional[int] = None
 
 
 class CarCreate(CarBase):
@@ -186,6 +232,7 @@ class Car(CarBase):
     id: int
     service_records: list[ServiceRecord] = []
     scheduled_maintenance: list[ScheduledMaintenance] = []
+    car_notes: list[CarNote] = []
 
     model_config = {"from_attributes": True}
 

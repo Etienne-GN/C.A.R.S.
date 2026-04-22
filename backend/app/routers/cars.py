@@ -1,8 +1,10 @@
 import uuid
 from pathlib import Path
+from typing import Optional
 
 import aiofiles
-from fastapi import APIRouter, Depends, HTTPException, UploadFile
+import httpx
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,6 +14,8 @@ from ..database import get_db
 
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
 MAX_PHOTO_SIZE = 10 * 1024 * 1024  # 10 MB
+
+NHTSA_VPIC = "https://vpic.nhtsa.dot.gov/api/vehicles/decodevin/{}?format=json"
 
 router = APIRouter(prefix="/cars", tags=["cars"])
 
@@ -81,6 +85,59 @@ async def upload_car_photo(car_id: int, file: UploadFile, db: AsyncSession = Dep
             old.unlink()
 
     return await crud.update_car(db, car_id, schemas.CarUpdate(photo_filename=filename))
+
+
+@router.get("/decode-vin")
+async def decode_vin(vin: str = Query(..., min_length=17, max_length=17)):
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(NHTSA_VPIC.format(vin))
+            resp.raise_for_status()
+            data = resp.json()
+    except httpx.HTTPError:
+        raise HTTPException(status_code=502, detail="Failed to reach NHTSA VIN decoder.")
+
+    def get(variable: str) -> Optional[str]:
+        for r in data.get("Results", []):
+            if r.get("Variable") == variable and r.get("Value") not in (None, "", "Not Applicable"):
+                return r["Value"]
+        return None
+
+    def get_int(variable: str) -> Optional[int]:
+        v = get(variable)
+        try: return int(float(v)) if v else None
+        except (ValueError, TypeError): return None
+
+    def get_float(variable: str) -> Optional[float]:
+        v = get(variable)
+        try: return float(v) if v else None
+        except (ValueError, TypeError): return None
+
+    transmission_style = get("Transmission Style")
+    transmission_speeds = get("Transmission Speeds")
+    transmission = None
+    if transmission_style:
+        transmission = transmission_style
+        if transmission_speeds:
+            transmission = f"{transmission_speeds}-speed {transmission_style}"
+
+    return {
+        "make": get("Make"),
+        "model": get("Model"),
+        "year": get_int("Model Year"),
+        "trim": get("Trim"),
+        "engine": f"{get('Engine Configuration') or ''} {get('Displacement (L)') or ''}L".strip() or None,
+        "transmission": transmission,
+        "drivetrain": get("Drive Type"),
+        "fuel_type": get("Fuel Type - Primary"),
+        "horsepower": get_int("Engine Brake (hp) From"),
+        "weight_kg": None,
+        "doors": get_int("Doors"),
+        "body_class": get("Body Class"),
+        "cylinders": get_int("Engine Number of Cylinders"),
+        "displacement_l": get_float("Displacement (L)"),
+        "plant_country": get("Plant Country"),
+    }
 
 
 @router.delete("/{car_id}/photo", response_model=schemas.Car)

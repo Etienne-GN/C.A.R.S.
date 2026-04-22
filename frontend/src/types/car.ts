@@ -19,8 +19,24 @@ export interface Car {
   notes?: string;
   is_archived?: boolean;
   photo_filename?: string;
+  horsepower?: number;
+  torque_lbft?: number;
+  zero_to_100_s?: number;
+  top_speed_kmh?: number;
+  weight_kg?: number;
+  fuel_city?: string;
+  fuel_highway?: string;
+  fuel_tank_l?: number;
+  oil_capacity_l?: number;
+  oil_type?: string;
+  coolant_capacity_l?: number;
+  tire_size_summer?: string;
+  tire_size_winter?: string;
+  front_disk_mm?: number;
+  rear_disk_mm?: number;
   service_records: import('./service').ServiceRecord[];
   scheduled_maintenance: import('./maintenance').ScheduledMaintenance[];
+  car_notes: import('./note').CarNote[];
 }
 
 export interface CarSummary {
@@ -61,6 +77,22 @@ export interface CarCreate {
   current_mileage?: number;
   notes?: string;
   is_archived?: boolean;
+  photo_filename?: string;
+  horsepower?: number;
+  torque_lbft?: number;
+  zero_to_100_s?: number;
+  top_speed_kmh?: number;
+  weight_kg?: number;
+  fuel_city?: string;
+  fuel_highway?: string;
+  fuel_tank_l?: number;
+  oil_capacity_l?: number;
+  oil_type?: string;
+  coolant_capacity_l?: number;
+  tire_size_summer?: string;
+  tire_size_winter?: string;
+  front_disk_mm?: number;
+  rear_disk_mm?: number;
 }
 
 export type CarUpdate = Partial<CarCreate>;

@@ -24,3 +24,24 @@ export const uploadCarPhoto = (id: number, file: File): Promise<Car> => {
 
 export const deleteCarPhoto = (id: number): Promise<Car> =>
   api.delete<Car>(`/cars/${id}/photo`).then((r) => r.data);
+
+export interface VinDecodeResult {
+  make?: string;
+  model?: string;
+  year?: number;
+  trim?: string;
+  engine?: string;
+  transmission?: string;
+  drivetrain?: string;
+  fuel_type?: string;
+  horsepower?: number;
+  weight_kg?: number;
+  doors?: number;
+  body_class?: string;
+  cylinders?: number;
+  displacement_l?: number;
+  plant_country?: string;
+}
+
+export const decodeVin = (vin: string): Promise<VinDecodeResult> =>
+  api.get<VinDecodeResult>('/cars/decode-vin', { params: { vin } }).then((r) => r.data);
