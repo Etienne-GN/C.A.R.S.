@@ -1,0 +1,7 @@
+{
+  "key": "tires",
+  "title": "Tire Tracker",
+  "icon": "🔄",
+  "description": "Track tire sets, seasons, tread depth, and rotation history.",
+  "route": "/modules/tires"
+}

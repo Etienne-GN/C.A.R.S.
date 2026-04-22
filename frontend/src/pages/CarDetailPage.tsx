@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { deleteCar, getCar, updateCar } from '../api/cars';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { deleteCar, deleteCarPhoto, getCar, updateCar, uploadCarPhoto } from '../api/cars';
 import { createMaintenance, deleteMaintenance, updateMaintenance } from '../api/maintenance';
 import ConfirmDialog from '../components/ConfirmDialog';
 import type { Car } from '../types/car';
@@ -35,22 +36,54 @@ function DetailField({ label, value }: { label: string; value?: string | number 
 
 // ── Overview Tab ──────────────────────────────────────────────────────────────
 
+function buildYearlyChart(records: ServiceRecord[]) {
+  const byYear: Record<string, number> = {};
+  for (const r of records) {
+    const y = r.date.slice(0, 4);
+    byYear[y] = (byYear[y] ?? 0) + r.total_cost;
+  }
+  return Object.entries(byYear).sort(([a], [b]) => a.localeCompare(b)).map(([year, total]) => ({ year, total }));
+}
+
 function OverviewTab({ car }: { car: Car }) {
   const totalSpent = car.service_records.reduce((s, r) => s + r.total_cost, 0);
+  const chartData = buildYearlyChart(car.service_records);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {totalSpent > 0 && (
-        <div className="cost-row">
-          <div className="cost-row-item">
-            <span className="cost-row-label">Total Maintenance Spent</span>
-            <span className="cost-row-value">{fmtCurrency(totalSpent)}</span>
+        <>
+          <div className="cost-row">
+            <div className="cost-row-item">
+              <span className="cost-row-label">Total Maintenance Spent</span>
+              <span className="cost-row-value">{fmtCurrency(totalSpent)}</span>
+            </div>
+            <div className="cost-row-item">
+              <span className="cost-row-label">Services Logged</span>
+              <span className="cost-row-value">{car.service_records.length}</span>
+            </div>
           </div>
-          <div className="cost-row-item">
-            <span className="cost-row-label">Services Logged</span>
-            <span className="cost-row-value">{car.service_records.length}</span>
-          </div>
-        </div>
+          {chartData.length > 1 && (
+            <div className="form-section">
+              <div className="form-section-title">Yearly Spending</div>
+              <div style={{ padding: '20px' }}>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis dataKey="year" tick={{ fill: 'var(--text-2)', fontSize: 12 }} />
+                    <YAxis tickFormatter={(v) => `$${v}`} tick={{ fill: 'var(--text-2)', fontSize: 11 }} width={60} />
+                    <Tooltip
+                      formatter={(v: number) => [fmtCurrency(v), 'Spent']}
+                      contentStyle={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: '6px' }}
+                      labelStyle={{ color: 'var(--text-1)' }}
+                    />
+                    <Bar dataKey="total" fill="var(--accent)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       <div className="form-section">
@@ -306,6 +339,8 @@ export default function CarDetailPage() {
   const [tab, setTab] = useState<Tab>('overview');
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [archiving, setArchiving] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const photoRef = useRef<HTMLInputElement>(null);
   const refreshRef = useRef(0);
 
   const load = () => {
@@ -331,6 +366,25 @@ export default function CarDetailPage() {
     setArchiving(false);
   };
 
+  const handlePhotoUpload = async (file: File) => {
+    if (!car) return;
+    setPhotoUploading(true);
+    try {
+      const updated = await uploadCarPhoto(car.id, file);
+      setCar(updated);
+    } catch {
+      setError('Failed to upload photo.');
+    } finally {
+      setPhotoUploading(false);
+    }
+  };
+
+  const handlePhotoDelete = async () => {
+    if (!car) return;
+    const updated = await deleteCarPhoto(car.id);
+    setCar(updated);
+  };
+
   if (loading) return <div className="loading-page"><span className="spinner" /></div>;
   if (error || !car) return (
     <div>
@@ -354,14 +408,36 @@ export default function CarDetailPage() {
       <Link to="/" className="back-link">← Garage</Link>
 
       <div className="page-header">
-        <div>
-          <div className="page-title" style={car.is_archived ? { opacity: 0.6 } : undefined}>
-            {car.year} {car.make} {car.model}
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <div
+            onClick={() => photoRef.current?.click()}
+            title={car.photo_filename ? 'Change photo' : 'Add photo'}
+            style={{
+              width: '64px', height: '64px', borderRadius: '8px', flexShrink: 0, cursor: 'pointer',
+              background: 'var(--surface-2)', border: '2px dashed var(--border)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              overflow: 'hidden', position: 'relative',
+            }}
+          >
+            {car.photo_filename
+              ? <img src={`/uploads/${car.photo_filename}`} alt="car" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : photoUploading ? <span className="spinner" /> : <span style={{ fontSize: '22px' }}>📷</span>
+            }
           </div>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
-            <span className="badge badge-plate">{car.license_plate}</span>
-            {car.trim && <span style={{ fontSize: '13px', color: 'var(--text-2)' }}>{car.trim}</span>}
-            {car.is_archived && <span className="badge" style={{ background: '#3a3a3a', color: '#888' }}>Archived</span>}
+          <input ref={photoRef} type="file" accept="image/jpeg,image/png,image/webp" style={{ display: 'none' }}
+            onChange={(e) => e.target.files?.[0] && handlePhotoUpload(e.target.files[0])} />
+          <div>
+            <div className="page-title" style={car.is_archived ? { opacity: 0.6 } : undefined}>
+              {car.year} {car.make} {car.model}
+            </div>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
+              <span className="badge badge-plate">{car.license_plate}</span>
+              {car.trim && <span style={{ fontSize: '13px', color: 'var(--text-2)' }}>{car.trim}</span>}
+              {car.is_archived && <span className="badge" style={{ background: '#3a3a3a', color: '#888' }}>Archived</span>}
+              {car.photo_filename && (
+                <button className="btn btn-sm btn-ghost" style={{ fontSize: '11px', padding: '2px 6px' }} onClick={handlePhotoDelete}>Remove photo</button>
+              )}
+            </div>
           </div>
         </div>
         <div className="page-header-actions">

@@ -1,0 +1,7 @@
+{
+  "key": "recalls",
+  "title": "Recall Checker",
+  "icon": "⚠️",
+  "description": "Check NHTSA recall database for open recalls on your vehicles.",
+  "route": "/modules/recalls"
+}

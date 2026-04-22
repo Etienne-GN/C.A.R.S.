@@ -8,6 +8,8 @@ from sqlalchemy import text
 from .config import settings
 from .database import engine
 from . import models, module_manager
+from .modules.fuel import models as fuel_models  # noqa: F401 — registers table with Base
+from .modules.tires import models as tire_models  # noqa: F401 — registers table with Base
 from .routers import cars, services, maintenance, modules
 
 
@@ -35,6 +37,11 @@ async def lifespan(app: FastAPI):
             ("is_archived", "BOOLEAN DEFAULT 0 NOT NULL"),
         ]
         for col, col_type in new_columns:
+            if col not in existing:
+                await conn.execute(text(f"ALTER TABLE cars ADD COLUMN {col} {col_type}"))
+
+        new_columns_cars_v2 = [("photo_filename", "VARCHAR(255)")]
+        for col, col_type in new_columns_cars_v2:
             if col not in existing:
                 await conn.execute(text(f"ALTER TABLE cars ADD COLUMN {col} {col_type}"))
 
