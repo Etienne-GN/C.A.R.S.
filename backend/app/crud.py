@@ -18,6 +18,7 @@ def _car_with_all():
             selectinload(models.Car.service_records)
             .selectinload(models.ServiceRecord.attachments),
             selectinload(models.Car.scheduled_maintenance),
+            selectinload(models.Car.car_notes),
         )
     )
 
