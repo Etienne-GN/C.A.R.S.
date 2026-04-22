@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Layout from './components/Layout';
+import { ModulesProvider } from './context/ModulesContext';
 import CarDetailPage from './pages/CarDetailPage';
 import CarFormPage from './pages/CarFormPage';
 import DashboardPage from './pages/DashboardPage';
@@ -12,6 +13,7 @@ import ServiceFormPage from './pages/ServiceFormPage';
 export default function App() {
   return (
     <BrowserRouter>
+      <ModulesProvider>
       <Routes>
         <Route element={<Layout />}>
           <Route index element={<DashboardPage />} />
@@ -26,6 +28,7 @@ export default function App() {
           <Route path="modules/fuses/:panelKey" element={<FusePanelDetailPage />} />
         </Route>
       </Routes>
+      </ModulesProvider>
     </BrowserRouter>
   );
 }

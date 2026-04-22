@@ -1,27 +1,19 @@
-import { useEffect, useState } from 'react';
-import { getModules, updateModule } from '../api/modules';
+import { useState } from 'react';
+import { updateModule } from '../api/modules';
+import { useModules } from '../context/ModulesContext';
 import type { ModuleInfo } from '../types/module';
 
 export default function ModulesPage() {
-  const [modules, setModules] = useState<ModuleInfo[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { modules, refresh } = useModules();
+  const loading = modules.length === 0;
   const [toggling, setToggling] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const ctrl = new AbortController();
-    getModules(ctrl.signal)
-      .then(setModules)
-      .catch(() => setError('Failed to load modules.'))
-      .finally(() => setLoading(false));
-    return () => ctrl.abort();
-  }, []);
 
   const toggle = async (mod: ModuleInfo) => {
     setToggling(mod.key);
     try {
-      const updated = await updateModule(mod.key, !mod.is_enabled);
-      setModules((prev) => prev.map((m) => (m.key === updated.key ? updated : m)));
+      await updateModule(mod.key, !mod.is_enabled);
+      refresh();
     } catch {
       setError('Failed to update module.');
     } finally {

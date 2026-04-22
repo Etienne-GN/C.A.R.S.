@@ -1,23 +1,13 @@
-import { useEffect, useState } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { getModules } from '../api/modules';
-import type { ModuleInfo } from '../types/module';
+import { NavLink, Outlet } from 'react-router-dom';
+import { useModules } from '../context/ModulesContext';
 
 const NAV = [
   { to: '/',        icon: '🏠', label: 'Garage'  },
-  { to: '/modules', icon: '🧩', label: 'Modules' },
+  { to: '/modules', icon: '🧩', label: 'Modules', end: true },
 ];
 
 export default function Layout() {
-  const [modules, setModules] = useState<ModuleInfo[]>([]);
-  const location = useLocation();
-
-  useEffect(() => {
-    const ctrl = new AbortController();
-    getModules(ctrl.signal).then(setModules).catch(() => setModules([]));
-    return () => ctrl.abort();
-  }, [location.pathname]);
-
+  const { modules } = useModules();
   const activeModules = modules.filter((m) => m.is_enabled);
 
   return (
@@ -28,11 +18,11 @@ export default function Layout() {
           <div className="sidebar-logo-sub">Cars Archive of Repairs &amp; Services</div>
         </div>
         <nav className="sidebar-nav">
-          {NAV.map(({ to, icon, label }) => (
+          {NAV.map(({ to, icon, label, end }) => (
             <NavLink
               key={to}
               to={to}
-              end={to === '/'}
+              end={end ?? false}
               className={({ isActive }) => isActive ? 'active' : ''}
             >
               <span className="nav-icon">{icon}</span>
