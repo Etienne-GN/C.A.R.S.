@@ -127,7 +127,7 @@ export default function FuelLogPage() {
                 <XAxis dataKey="date" tick={{ fill: 'var(--text-2)', fontSize: 11 }} />
                 <YAxis tick={{ fill: 'var(--text-2)', fontSize: 11 }} unit=" L" width={50} />
                 <Tooltip
-                  formatter={(v: number) => [`${v} L/100km`, 'Consumption']}
+                  formatter={(v) => [`${Number(v)} L/100km`, 'Consumption']}
                   contentStyle={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: '6px' }}
                   labelStyle={{ color: 'var(--text-1)' }}
                 />

@@ -73,7 +73,7 @@ function OverviewTab({ car }: { car: Car }) {
                     <XAxis dataKey="year" tick={{ fill: 'var(--text-2)', fontSize: 12 }} />
                     <YAxis tickFormatter={(v) => `$${v}`} tick={{ fill: 'var(--text-2)', fontSize: 11 }} width={60} />
                     <Tooltip
-                      formatter={(v: number) => [fmtCurrency(v), 'Spent']}
+                      formatter={(v) => [fmtCurrency(Number(v)), 'Spent']}
                       contentStyle={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: '6px' }}
                       labelStyle={{ color: 'var(--text-1)' }}
                     />
