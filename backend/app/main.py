@@ -62,6 +62,17 @@ async def lifespan(app: FastAPI):
             if col not in existing:
                 await conn.execute(text(f"ALTER TABLE cars ADD COLUMN {col} {col_type}"))
 
+        new_columns_cars_v3 = [
+            ("doors", "INTEGER"),
+            ("body_class", "VARCHAR(50)"),
+            ("cylinders", "INTEGER"),
+            ("displacement_l", "REAL"),
+            ("plant_country", "VARCHAR(50)"),
+        ]
+        for col, col_type in new_columns_cars_v3:
+            if col not in existing:
+                await conn.execute(text(f"ALTER TABLE cars ADD COLUMN {col} {col_type}"))
+
         result = await conn.execute(text("PRAGMA table_info(service_records)"))
         sr_existing = {row[1] for row in result}
         if "labor_hours" not in sr_existing:

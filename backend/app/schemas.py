@@ -201,6 +201,13 @@ class CarBase(BaseModel):
     front_disk_mm: Optional[int] = None
     rear_disk_mm: Optional[int] = None
 
+    # Origin / Build info
+    doors: Optional[int] = None
+    body_class: Optional[str] = Field(default=None, max_length=50)
+    cylinders: Optional[int] = None
+    displacement_l: Optional[float] = None
+    plant_country: Optional[str] = Field(default=None, max_length=50)
+
 
 class CarCreate(CarBase):
     pass
@@ -226,6 +233,26 @@ class CarUpdate(BaseModel):
     notes: Optional[str] = None
     is_archived: Optional[bool] = None
     photo_filename: Optional[str] = None
+    horsepower: Optional[int] = None
+    torque_lbft: Optional[int] = None
+    zero_to_100_s: Optional[float] = None
+    top_speed_kmh: Optional[int] = None
+    weight_kg: Optional[int] = None
+    fuel_city: Optional[str] = Field(default=None, max_length=20)
+    fuel_highway: Optional[str] = Field(default=None, max_length=20)
+    fuel_tank_l: Optional[float] = None
+    oil_capacity_l: Optional[float] = None
+    oil_type: Optional[str] = Field(default=None, max_length=20)
+    coolant_capacity_l: Optional[float] = None
+    tire_size_summer: Optional[str] = Field(default=None, max_length=30)
+    tire_size_winter: Optional[str] = Field(default=None, max_length=30)
+    front_disk_mm: Optional[int] = None
+    rear_disk_mm: Optional[int] = None
+    doors: Optional[int] = None
+    body_class: Optional[str] = Field(default=None, max_length=50)
+    cylinders: Optional[int] = None
+    displacement_l: Optional[float] = None
+    plant_country: Optional[str] = Field(default=None, max_length=50)
 
 
 class Car(CarBase):

@@ -68,12 +68,17 @@ async def decode_vin(vin: str = Query(..., min_length=17, max_length=17)):
         if transmission_speeds:
             transmission = f"{transmission_speeds}-speed {transmission_style}"
 
+    disp_raw = get("Displacement (L)")
+    disp_str = f"{float(disp_raw):g}" if disp_raw else ""
+    engine_conf = get("Engine Configuration") or ""
+    engine = f"{engine_conf} {disp_str}L".strip() if (engine_conf or disp_str) else None
+
     return {
         "make": get("Make"),
         "model": get("Model"),
         "year": get_int("Model Year"),
         "trim": get("Trim"),
-        "engine": f"{get('Engine Configuration') or ''} {get('Displacement (L)') or ''}L".strip() or None,
+        "engine": engine,
         "transmission": transmission,
         "drivetrain": get("Drive Type"),
         "fuel_type": get("Fuel Type - Primary"),

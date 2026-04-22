@@ -34,6 +34,11 @@ export interface Car {
   tire_size_winter?: string;
   front_disk_mm?: number;
   rear_disk_mm?: number;
+  doors?: number;
+  body_class?: string;
+  cylinders?: number;
+  displacement_l?: number;
+  plant_country?: string;
   service_records: import('./service').ServiceRecord[];
   scheduled_maintenance: import('./maintenance').ScheduledMaintenance[];
   car_notes: import('./note').CarNote[];
@@ -93,6 +98,11 @@ export interface CarCreate {
   tire_size_winter?: string;
   front_disk_mm?: number;
   rear_disk_mm?: number;
+  doors?: number;
+  body_class?: string;
+  cylinders?: number;
+  displacement_l?: number;
+  plant_country?: string;
 }
 
 export type CarUpdate = Partial<CarCreate>;

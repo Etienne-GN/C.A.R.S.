@@ -16,6 +16,8 @@ const EMPTY: CarCreate = {
   oil_capacity_l: undefined, oil_type: '', coolant_capacity_l: undefined,
   tire_size_summer: '', tire_size_winter: '',
   front_disk_mm: undefined, rear_disk_mm: undefined,
+  doors: undefined, body_class: '', cylinders: undefined,
+  displacement_l: undefined, plant_country: '',
 };
 
 const DRIVETRAIN_OPTIONS = ['FWD', 'RWD', 'AWD', '4WD'];
@@ -65,6 +67,11 @@ export default function CarFormPage() {
           tire_size_winter: car.tire_size_winter ?? '',
           front_disk_mm: car.front_disk_mm,
           rear_disk_mm: car.rear_disk_mm,
+          doors: car.doors,
+          body_class: car.body_class ?? '',
+          cylinders: car.cylinders,
+          displacement_l: car.displacement_l,
+          plant_country: car.plant_country ?? '',
         });
         setLoading(false);
       })
@@ -102,6 +109,11 @@ export default function CarFormPage() {
         fuel_type: decoded.fuel_type || prev.fuel_type,
         horsepower: decoded.horsepower || prev.horsepower,
         weight_kg: decoded.weight_kg || prev.weight_kg,
+        doors: decoded.doors || prev.doors,
+        body_class: decoded.body_class || prev.body_class,
+        cylinders: decoded.cylinders || prev.cylinders,
+        displacement_l: decoded.displacement_l || prev.displacement_l,
+        plant_country: decoded.plant_country || prev.plant_country,
       }));
       setDecodeMsg('VIN decoded — review and adjust before saving.');
     } catch {
@@ -293,6 +305,32 @@ export default function CarFormPage() {
             <div className="form-field">
               <label>Rear Disk Diameter (mm)</label>
               <input type="number" name="rear_disk_mm" value={form.rear_disk_mm ?? ''} onChange={set} min={0} placeholder="e.g. 272" />
+            </div>
+          </div>
+        </div>
+
+        <div className="form-section">
+          <div className="form-section-title">Build Info</div>
+          <div className="form-grid form-grid-3">
+            <div className="form-field">
+              <label>Body Style</label>
+              <input type="text" name="body_class" value={form.body_class ?? ''} onChange={set} placeholder="e.g. Sedan/Saloon" />
+            </div>
+            <div className="form-field">
+              <label>Cylinders</label>
+              <input type="number" name="cylinders" value={form.cylinders ?? ''} onChange={set} min={1} placeholder="e.g. 5" />
+            </div>
+            <div className="form-field">
+              <label>Displacement (L)</label>
+              <input type="number" name="displacement_l" value={form.displacement_l ?? ''} onChange={set} min={0} step={0.01} placeholder="e.g. 2.48" />
+            </div>
+            <div className="form-field">
+              <label>Doors</label>
+              <input type="number" name="doors" value={form.doors ?? ''} onChange={set} min={1} placeholder="e.g. 4" />
+            </div>
+            <div className="form-field">
+              <label>Plant Country</label>
+              <input type="text" name="plant_country" value={form.plant_country ?? ''} onChange={set} placeholder="e.g. Mexico" />
             </div>
           </div>
         </div>

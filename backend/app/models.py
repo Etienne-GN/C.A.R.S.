@@ -52,6 +52,13 @@ class Car(Base):
     front_disk_mm = Column(Integer)
     rear_disk_mm = Column(Integer)
 
+    # Origin / Build info
+    doors = Column(Integer)
+    body_class = Column(String(50))
+    cylinders = Column(Integer)
+    displacement_l = Column(Float)
+    plant_country = Column(String(50))
+
     service_records = relationship("ServiceRecord", back_populates="car", cascade="all, delete-orphan", order_by="ServiceRecord.date.desc()")
     scheduled_maintenance = relationship("ScheduledMaintenance", back_populates="car", cascade="all, delete-orphan")
     car_notes = relationship("CarNote", back_populates="car", cascade="all, delete-orphan", order_by="CarNote.created_at.desc()")

@@ -146,6 +146,17 @@ function OverviewTab({ car }: { car: Car }) {
       </div>
 
       <div className="form-section">
+        <div className="form-section-title">Build Info</div>
+        <div className="detail-grid" style={{ padding: '20px' }}>
+          <DetailField label="Body Style" value={car.body_class} />
+          <DetailField label="Cylinders" value={car.cylinders} />
+          <DetailField label="Displacement" value={car.displacement_l ? `${car.displacement_l} L` : null} />
+          <DetailField label="Doors" value={car.doors} />
+          <DetailField label="Plant Country" value={car.plant_country} />
+        </div>
+      </div>
+
+      <div className="form-section">
         <div className="form-section-title">Purchase Info</div>
         <div className="detail-grid" style={{ padding: '20px' }}>
           <DetailField label="Purchase Date" value={fmtDate(car.purchase_date)} />
