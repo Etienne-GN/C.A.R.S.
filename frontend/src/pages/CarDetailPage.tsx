@@ -106,9 +106,14 @@ function OverviewTab({ car }: { car: Car }) {
         <div className="form-section-title">Specifications</div>
         <div className="detail-grid" style={{ padding: '20px' }}>
           <DetailField label="Engine" value={car.engine} />
+          <DetailField label="Cylinders" value={car.cylinders} />
+          <DetailField label="Displacement" value={car.displacement_l ? `${car.displacement_l} L` : null} />
           <DetailField label="Transmission" value={car.transmission} />
           <DetailField label="Drivetrain" value={car.drivetrain} />
           <DetailField label="Fuel Type" value={car.fuel_type} />
+          <DetailField label="Body Style" value={car.body_class} />
+          <DetailField label="Doors" value={car.doors} />
+          <DetailField label="Plant Country" value={car.plant_country} />
           <DetailField label="Horsepower" value={car.horsepower ? `${car.horsepower} hp` : null} />
           <DetailField label="Torque" value={car.torque_lbft ? `${car.torque_lbft} lb-ft` : null} />
           <DetailField label="Weight" value={car.weight_kg ? `${car.weight_kg} kg` : null} />
@@ -142,17 +147,6 @@ function OverviewTab({ car }: { car: Car }) {
           <DetailField label="Winter Tires" value={car.tire_size_winter} />
           <DetailField label="Front Disk" value={car.front_disk_mm ? `${car.front_disk_mm} mm` : null} />
           <DetailField label="Rear Disk" value={car.rear_disk_mm ? `${car.rear_disk_mm} mm` : null} />
-        </div>
-      </div>
-
-      <div className="form-section">
-        <div className="form-section-title">Build Info</div>
-        <div className="detail-grid" style={{ padding: '20px' }}>
-          <DetailField label="Body Style" value={car.body_class} />
-          <DetailField label="Cylinders" value={car.cylinders} />
-          <DetailField label="Displacement" value={car.displacement_l ? `${car.displacement_l} L` : null} />
-          <DetailField label="Doors" value={car.doors} />
-          <DetailField label="Plant Country" value={car.plant_country} />
         </div>
       </div>
 
