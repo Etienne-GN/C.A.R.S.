@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useState } from 'react';
 import { getCars } from '../api/cars';
 import { addTreadReading, createTireSet, deleteTireSet, getTireSets } from '../api/tires';
+import ConfirmDialog from '../components/ConfirmDialog';
 import type { CarSummary } from '../types/car';
 import type { TireSet, TireSetCreate, TreadReadingCreate } from '../types/tires';
 
@@ -38,6 +39,7 @@ export default function TirePage() {
   const [readingForm, setReadingForm] = useState<TreadReadingCreate>(EMPTY_READING);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
 
   useEffect(() => {
     getCars().then((c) => {
@@ -92,6 +94,7 @@ export default function TirePage() {
 
   const handleDeleteSet = async (id: number) => {
     await deleteTireSet(id);
+    setConfirmDelete(null);
     await reload();
   };
 
@@ -99,6 +102,16 @@ export default function TirePage() {
 
   return (
     <div>
+      {confirmDelete !== null && (
+        <ConfirmDialog
+          message="Delete this tire set and all its tread readings?"
+          onConfirm={() => handleDeleteSet(confirmDelete)}
+          onCancel={() => setConfirmDelete(null)}
+          confirmLabel="Delete"
+          danger
+        />
+      )}
+
       <div className="page-header">
         <div>
           <div className="page-title">Tire Tracker</div>
@@ -209,7 +222,7 @@ export default function TirePage() {
                   <button className="btn btn-sm btn-ghost" onClick={() => setReadingFor(readingFor === ts.id ? null : ts.id)}>
                     + Tread Reading
                   </button>
-                  <button className="btn btn-sm btn-ghost btn-icon" onClick={() => handleDeleteSet(ts.id)} title="Delete">✕</button>
+                  <button className="btn btn-sm btn-ghost btn-icon" onClick={() => setConfirmDelete(ts.id)} title="Delete">✕</button>
                 </div>
               </div>
               <div style={{ padding: '16px 20px' }}>
