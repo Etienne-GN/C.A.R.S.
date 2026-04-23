@@ -85,8 +85,10 @@ async def create_tire_set(car_id: int, body: TireSetCreate, db: AsyncSession = D
     ts = TireSet(car_id=car_id, **body.model_dump(exclude_none=True))
     db.add(ts)
     await db.commit()
-    await db.refresh(ts)
-    ts.tread_readings = []
+    result = await db.execute(
+        select(TireSet).where(TireSet.id == ts.id).options(selectinload(TireSet.tread_readings))
+    )
+    ts = result.scalar_one()
     return _serialize_set(ts)
 
 
@@ -101,7 +103,10 @@ async def update_tire_set(set_id: int, body: TireSetUpdate, db: AsyncSession = D
     for k, v in body.model_dump(exclude_none=True).items():
         setattr(ts, k, v)
     await db.commit()
-    await db.refresh(ts)
+    result = await db.execute(
+        select(TireSet).where(TireSet.id == set_id).options(selectinload(TireSet.tread_readings))
+    )
+    ts = result.scalar_one()
     return _serialize_set(ts)
 
 
