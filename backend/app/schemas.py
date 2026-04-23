@@ -205,7 +205,6 @@ class CarBase(BaseModel):
     doors: Optional[int] = None
     body_class: Optional[str] = Field(default=None, max_length=50)
     cylinders: Optional[int] = None
-    displacement_l: Optional[float] = None
     plant_country: Optional[str] = Field(default=None, max_length=50)
 
 
@@ -251,7 +250,6 @@ class CarUpdate(BaseModel):
     doors: Optional[int] = None
     body_class: Optional[str] = Field(default=None, max_length=50)
     cylinders: Optional[int] = None
-    displacement_l: Optional[float] = None
     plant_country: Optional[str] = Field(default=None, max_length=50)
 
 

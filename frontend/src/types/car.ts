@@ -37,7 +37,6 @@ export interface Car {
   doors?: number;
   body_class?: string;
   cylinders?: number;
-  displacement_l?: number;
   plant_country?: string;
   service_records: import('./service').ServiceRecord[];
   scheduled_maintenance: import('./maintenance').ScheduledMaintenance[];
@@ -101,7 +100,6 @@ export interface CarCreate {
   doors?: number;
   body_class?: string;
   cylinders?: number;
-  displacement_l?: number;
   plant_country?: string;
 }
 

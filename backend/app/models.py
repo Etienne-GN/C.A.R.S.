@@ -56,7 +56,6 @@ class Car(Base):
     doors = Column(Integer)
     body_class = Column(String(50))
     cylinders = Column(Integer)
-    displacement_l = Column(Float)
     plant_country = Column(String(50))
 
     service_records = relationship("ServiceRecord", back_populates="car", cascade="all, delete-orphan", order_by="ServiceRecord.date.desc()")

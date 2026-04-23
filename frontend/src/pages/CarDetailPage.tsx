@@ -107,7 +107,6 @@ function OverviewTab({ car }: { car: Car }) {
         <div className="detail-grid" style={{ padding: '20px' }}>
           <DetailField label="Engine" value={car.engine} />
           <DetailField label="Cylinders" value={car.cylinders} />
-          <DetailField label="Displacement" value={car.displacement_l ? `${car.displacement_l} L` : null} />
           <DetailField label="Transmission" value={car.transmission} />
           <DetailField label="Drivetrain" value={car.drivetrain} />
           <DetailField label="Fuel Type" value={car.fuel_type} />

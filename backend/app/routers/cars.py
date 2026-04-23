@@ -87,7 +87,6 @@ async def decode_vin(vin: str = Query(..., min_length=17, max_length=17)):
         "doors": get_int("Doors"),
         "body_class": get("Body Class"),
         "cylinders": get_int("Engine Number of Cylinders"),
-        "displacement_l": get_float("Displacement (L)"),
         "plant_country": get("Plant Country"),
     }
 

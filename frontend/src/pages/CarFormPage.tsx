@@ -17,7 +17,7 @@ const EMPTY: CarCreate = {
   tire_size_summer: '', tire_size_winter: '',
   front_disk_mm: undefined, rear_disk_mm: undefined,
   doors: undefined, body_class: '', cylinders: undefined,
-  displacement_l: undefined, plant_country: '',
+  plant_country: '',
 };
 
 const DRIVETRAIN_OPTIONS = ['FWD', 'RWD', 'AWD', '4WD'];
@@ -70,7 +70,6 @@ export default function CarFormPage() {
           doors: car.doors,
           body_class: car.body_class ?? '',
           cylinders: car.cylinders,
-          displacement_l: car.displacement_l,
           plant_country: car.plant_country ?? '',
         });
         setLoading(false);
@@ -112,7 +111,6 @@ export default function CarFormPage() {
         doors: decoded.doors || prev.doors,
         body_class: decoded.body_class || prev.body_class,
         cylinders: decoded.cylinders || prev.cylinders,
-        displacement_l: decoded.displacement_l || prev.displacement_l,
         plant_country: decoded.plant_country || prev.plant_country,
       }));
       setDecodeMsg('VIN decoded — review and adjust before saving.');
@@ -251,10 +249,6 @@ export default function CarFormPage() {
             <div className="form-field">
               <label>Cylinders</label>
               <input type="number" name="cylinders" value={form.cylinders ?? ''} onChange={set} min={1} placeholder="e.g. 5" />
-            </div>
-            <div className="form-field">
-              <label>Displacement (L)</label>
-              <input type="number" name="displacement_l" value={form.displacement_l ?? ''} onChange={set} min={0} step={0.01} placeholder="e.g. 2.48" />
             </div>
             <div className="form-field">
               <label>Body Style</label>
