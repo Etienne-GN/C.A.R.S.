@@ -658,9 +658,6 @@ select option { background: var(--surface-2); }
     max-width: 64px;
   }
 
-  .main {
-    padding-bottom: 76px;
-  }
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
@@ -671,7 +668,7 @@ select option { background: var(--surface-2); }
 
 @media (max-width: 768px) {
   .sidebar { transform: translateX(-100%); }
-  .main { margin-left: 0; padding: 20px 16px; }
+  .main { margin-left: 0; padding: 20px 16px 80px; }
   .form-grid-2, .form-grid-3 { grid-template-columns: 1fr; }
   .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
   .page-header-actions { width: 100%; display: flex; flex-wrap: wrap; gap: 8px; }
