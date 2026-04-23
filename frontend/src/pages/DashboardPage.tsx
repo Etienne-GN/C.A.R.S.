@@ -127,7 +127,7 @@ export default function DashboardPage() {
             placeholder="Search make, model, plate…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            style={{ width: '220px' }}
+            style={{ width: '100%', maxWidth: '220px' }}
           />
           <Link to="/cars/new" className="btn btn-primary">＋ Add Car</Link>
         </div>

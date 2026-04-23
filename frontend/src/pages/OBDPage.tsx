@@ -50,7 +50,7 @@ export default function OBDPage() {
           placeholder="Search code or keyword (e.g. P0420, misfire)…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          style={{ width: '280px' }}
+          style={{ width: '100%', maxWidth: '280px' }}
         />
       </div>
 
@@ -65,7 +65,7 @@ export default function OBDPage() {
           return (
             <div key={system} className="form-section" style={{ marginBottom: '16px' }}>
               <div className="form-section-title">{system}</div>
-              <table className="parts-table">
+              <div style={{ overflowX: 'auto' }}><table className="parts-table">
                 <thead>
                   <tr>
                     <th style={{ width: '90px' }}>Code</th>
@@ -86,7 +86,7 @@ export default function OBDPage() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             </div>
           );
         })
