@@ -1,0 +1,7 @@
+{
+  "key": "logbook",
+  "title": "Logbook",
+  "icon": "📓",
+  "description": "Log trips with distance, driving time, purpose, and fuel cost. Track mileage for work or personal use.",
+  "route": "/modules/logbook"
+}

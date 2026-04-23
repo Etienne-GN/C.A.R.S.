@@ -10,6 +10,7 @@ from .database import engine
 from . import models, module_manager
 from .modules.fuel import models as fuel_models  # noqa: F401 — registers table with Base
 from .modules.tires import models as tire_models  # noqa: F401 — registers table with Base
+from .modules.logbook import models as logbook_models  # noqa: F401 — registers table with Base
 from .routers import cars, services, maintenance, modules, notes
 
 

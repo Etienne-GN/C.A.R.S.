@@ -5,6 +5,7 @@ import CarDetailPage from './pages/CarDetailPage';
 import CarFormPage from './pages/CarFormPage';
 import DashboardPage from './pages/DashboardPage';
 import FuelLogPage from './pages/FuelLogPage';
+import LogbookPage from './pages/LogbookPage';
 import FusePanelDetailPage from './pages/FusePanelDetailPage';
 import FusesListPage from './pages/FusesListPage';
 import ModulesPage from './pages/ModulesPage';
@@ -34,6 +35,7 @@ export default function App() {
             <Route path="modules/recalls" element={<RecallsPage />} />
             <Route path="modules/tires" element={<TirePage />} />
             <Route path="modules/obd" element={<OBDPage />} />
+            <Route path="modules/logbook" element={<LogbookPage />} />
           </Route>
         </Routes>
       </ModulesProvider>
