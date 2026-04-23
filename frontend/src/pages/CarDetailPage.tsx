@@ -243,6 +243,7 @@ function ScheduleTab({ car, items, onRefresh }: { car: Car; items: ScheduledMain
   const [adding, setAdding] = useState(false);
   const [form, setForm] = useState<ScheduledMaintenanceCreate>(EMPTY_TASK);
   const [submitting, setSubmitting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
 
   const set = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -272,6 +273,7 @@ function ScheduleTab({ car, items, onRefresh }: { car: Car; items: ScheduledMain
 
   const remove = async (id: number) => {
     await deleteMaintenance(id);
+    setConfirmDelete(null);
     onRefresh();
   };
 
@@ -284,6 +286,15 @@ function ScheduleTab({ car, items, onRefresh }: { car: Car; items: ScheduledMain
 
   return (
     <div>
+      {confirmDelete !== null && (
+        <ConfirmDialog
+          message="Delete this scheduled task?"
+          onConfirm={() => remove(confirmDelete)}
+          onCancel={() => setConfirmDelete(null)}
+          confirmLabel="Delete"
+          danger
+        />
+      )}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
         <button className="btn btn-primary" onClick={() => setAdding((v) => !v)}>
           {adding ? 'Cancel' : '＋ Add Task'}
@@ -358,7 +369,7 @@ function ScheduleTab({ car, items, onRefresh }: { car: Car; items: ScheduledMain
                 </div>
               </div>
               {statusBadge(status)}
-              <button className="btn btn-sm btn-ghost btn-icon" onClick={() => remove(item.id)} title="Delete">✕</button>
+              <button className="btn btn-sm btn-ghost btn-icon" onClick={() => setConfirmDelete(item.id)} title="Delete">✕</button>
             </div>
           );
         })
@@ -376,6 +387,7 @@ function NotesTab({ car, notes, onRefresh }: { car: Car; notes: CarNote[]; onRef
   const [expanded, setExpanded] = useState<number | null>(null);
   const [editing, setEditing] = useState<number | null>(null);
   const [editForm, setEditForm] = useState({ title: '', body: '' });
+  const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -403,11 +415,21 @@ function NotesTab({ car, notes, onRefresh }: { car: Car; notes: CarNote[]; onRef
   const handleDelete = async (noteId: number) => {
     await deleteNote(noteId);
     if (expanded === noteId) setExpanded(null);
+    setConfirmDelete(null);
     onRefresh();
   };
 
   return (
     <div>
+      {confirmDelete !== null && (
+        <ConfirmDialog
+          message="Delete this note?"
+          onConfirm={() => handleDelete(confirmDelete)}
+          onCancel={() => setConfirmDelete(null)}
+          confirmLabel="Delete"
+          danger
+        />
+      )}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
         <button className="btn btn-primary" onClick={() => setAdding((v) => !v)}>
           {adding ? 'Cancel' : '＋ Add Note'}
@@ -475,7 +497,7 @@ function NotesTab({ car, notes, onRefresh }: { car: Car; notes: CarNote[]; onRef
                 >Edit</button>
                 <button
                   className="btn btn-sm btn-ghost btn-icon"
-                  onClick={(e) => { e.stopPropagation(); handleDelete(note.id); }}
+                  onClick={(e) => { e.stopPropagation(); setConfirmDelete(note.id); }}
                   title="Delete"
                 >✕</button>
               </div>

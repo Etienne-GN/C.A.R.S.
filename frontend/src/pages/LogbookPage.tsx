@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useState } from 'react';
 import { getCars } from '../api/cars';
 import { createTrip, deleteTrip, getTrips } from '../api/logbook';
+import ConfirmDialog from '../components/ConfirmDialog';
 import type { CarSummary } from '../types/car';
 import type { TripLog, TripLogCreate } from '../types/logbook';
 
@@ -42,6 +43,7 @@ export default function LogbookPage() {
   const [form, setForm] = useState<TripLogCreate>(EMPTY);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
 
   useEffect(() => {
     getCars().then((c) => {
@@ -91,6 +93,7 @@ export default function LogbookPage() {
   const handleDelete = async (id: number) => {
     await deleteTrip(id);
     setTrips((prev) => prev.filter((t) => t.id !== id));
+    setConfirmDelete(null);
   };
 
   const totalKm = trips.reduce((s, t) => s + t.distance_km, 0);
@@ -101,6 +104,15 @@ export default function LogbookPage() {
 
   return (
     <div>
+      {confirmDelete !== null && (
+        <ConfirmDialog
+          message="Delete this trip log entry?"
+          onConfirm={() => handleDelete(confirmDelete)}
+          onCancel={() => setConfirmDelete(null)}
+          confirmLabel="Delete"
+          danger
+        />
+      )}
       <div className="page-header">
         <div className="page-title">📓 Logbook</div>
       </div>
@@ -235,7 +247,7 @@ export default function LogbookPage() {
                   </div>
                   <button
                     className="btn btn-sm btn-ghost btn-icon"
-                    onClick={() => handleDelete(t.id)}
+                    onClick={() => setConfirmDelete(t.id)}
                     title="Delete"
                     style={{ alignSelf: 'flex-start', marginTop: '12px' }}
                   >✕</button>

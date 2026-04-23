@@ -24,6 +24,7 @@ export default function ServiceDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmAttachDelete, setConfirmAttachDelete] = useState<number | null>(null);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -59,6 +60,7 @@ export default function ServiceDetailPage() {
 
   const removeAttachment = async (id: number) => {
     await deleteAttachment(id);
+    setConfirmAttachDelete(null);
     load();
   };
 
@@ -75,6 +77,15 @@ export default function ServiceDetailPage() {
 
   return (
     <div>
+      {confirmAttachDelete !== null && (
+        <ConfirmDialog
+          message="Delete this attachment?"
+          onConfirm={() => removeAttachment(confirmAttachDelete)}
+          onCancel={() => setConfirmAttachDelete(null)}
+          confirmLabel="Delete"
+          danger
+        />
+      )}
       {confirmDelete && (
         <ConfirmDialog
           message={`Delete "${record.title}"? This cannot be undone.`}
@@ -214,7 +225,7 @@ export default function ServiceDetailPage() {
                   <button
                     className="btn btn-sm btn-ghost"
                     style={{ fontSize: '11px', padding: '2px 6px' }}
-                    onClick={() => removeAttachment(att.id)}
+                    onClick={() => setConfirmAttachDelete(att.id)}
                     title="Remove"
                   >
                     Remove

@@ -2,6 +2,7 @@ import { type FormEvent, useEffect, useState } from 'react';
 import { Line, LineChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { getCars } from '../api/cars';
 import { createFuelLog, deleteFuelLog, getFuelLogs } from '../api/fuel';
+import ConfirmDialog from '../components/ConfirmDialog';
 import type { CarSummary } from '../types/car';
 import type { FuelLogCreate, FuelLogEntry } from '../types/fuel';
 
@@ -27,6 +28,7 @@ export default function FuelLogPage() {
   const [form, setForm] = useState<FuelLogCreate>(EMPTY);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
 
   useEffect(() => {
     getCars().then((c) => {
@@ -61,6 +63,7 @@ export default function FuelLogPage() {
 
   const handleDelete = async (id: number) => {
     await deleteFuelLog(id);
+    setConfirmDelete(null);
     if (selectedCar) setEntries(await getFuelLogs(selectedCar));
   };
 
@@ -79,6 +82,15 @@ export default function FuelLogPage() {
 
   return (
     <div>
+      {confirmDelete !== null && (
+        <ConfirmDialog
+          message="Delete this fuel log entry?"
+          onConfirm={() => handleDelete(confirmDelete)}
+          onCancel={() => setConfirmDelete(null)}
+          confirmLabel="Delete"
+          danger
+        />
+      )}
       <div className="page-header">
         <div>
           <div className="page-title">Fuel Log</div>
@@ -214,7 +226,7 @@ export default function FuelLogPage() {
                     </td>
                     <td style={{ color: 'var(--text-2)' }}>{e.station || '—'}</td>
                     <td>
-                      <button className="btn btn-sm btn-ghost btn-icon" onClick={() => handleDelete(e.id)} title="Delete">✕</button>
+                      <button className="btn btn-sm btn-ghost btn-icon" onClick={() => setConfirmDelete(e.id)} title="Delete">✕</button>
                     </td>
                   </tr>
                 ))}
