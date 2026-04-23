@@ -9,6 +9,10 @@ const NAV = [
 export default function Layout() {
   const { modules } = useModules();
   const activeModules = modules.filter((m) => m.is_enabled);
+  const bottomNav = [
+    ...NAV,
+    ...activeModules.map((m) => ({ to: m.route, icon: m.icon, label: m.title, end: false })),
+  ];
 
   return (
     <div className="layout">
@@ -19,12 +23,7 @@ export default function Layout() {
         </div>
         <nav className="sidebar-nav">
           {NAV.map(({ to, icon, label, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end ?? false}
-              className={({ isActive }) => isActive ? 'active' : ''}
-            >
+            <NavLink key={to} to={to} end={end ?? false} className={({ isActive }) => isActive ? 'active' : ''}>
               <span className="nav-icon">{icon}</span>
               {label}
             </NavLink>
@@ -36,11 +35,7 @@ export default function Layout() {
                 Module
               </div>
               {activeModules.map((m) => (
-                <NavLink
-                  key={m.key}
-                  to={m.route}
-                  className={({ isActive }) => isActive ? 'active' : ''}
-                >
+                <NavLink key={m.key} to={m.route} className={({ isActive }) => isActive ? 'active' : ''}>
                   <span className="nav-icon">{m.icon}</span>
                   {m.title}
                 </NavLink>
@@ -49,9 +44,19 @@ export default function Layout() {
           )}
         </nav>
       </aside>
+
       <main className="main">
         <Outlet />
       </main>
+
+      <nav className="bottom-nav">
+        {bottomNav.map(({ to, icon, label, end }) => (
+          <NavLink key={to} to={to} end={end ?? false} className={({ isActive }) => `bottom-nav-item${isActive ? ' active' : ''}`}>
+            <span className="bottom-nav-icon">{icon}</span>
+            <span className="bottom-nav-label">{label}</span>
+          </NavLink>
+        ))}
+      </nav>
     </div>
   );
 }
